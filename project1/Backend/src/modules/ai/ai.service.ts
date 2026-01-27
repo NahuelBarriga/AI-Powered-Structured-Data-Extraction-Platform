@@ -1,7 +1,8 @@
 import { createLLMProvider } from "./providers/llmFactory";
 import { buildExtractionPrompt } from "./prompt/promptBuilder";
-import { OrderSchema, Order } from "../schemas/order.schema";
-
+import type { Order } from "./schemas/order.schema";
+import { OrderSchema } from "./schemas/order.schema";
+import orderJsonSchema from "../../infra/db/seeds/schemas/order.schema.json";
 export class AIExtractionError extends Error {
   constructor(message: string, public raw?: string) {
     super(message);
@@ -11,20 +12,27 @@ export class AIExtractionError extends Error {
 export async function extractOrderFromText(
   input: string
 ): Promise<Order> {
-  const llm = createLLMProvider();
+  const llm = createLLMProvider(); //todo: make it dynamic?
 
-  // 1. Build prompt
-  const prompt = buildExtractionPrompt(input);
+  const promptInput = {
+    schemaName: "Order",
+    schemaDescription: "A purchase order with items, quantities, and notes.",
+    jsonSchema: orderJsonSchema,
+    inputText: input,
+  };
 
-  // 2. Call LLM
+  //build prompt
+  const prompt = buildExtractionPrompt(promptInput);
+
+  // call LLM
   const response = await llm.generate({
     systemPrompt:
       "You are a system that extracts structured data. Output only valid JSON.",
-    userPrompt: prompt,
+    userPrompt: prompt.user,
     temperature: 0,
   });
 
-  // 3. Parse JSON
+  // parse JSON
   let parsed: unknown;
   try {
     parsed = JSON.parse(response.content);
@@ -35,7 +43,7 @@ export async function extractOrderFromText(
     );
   }
 
-  // 4. Validate schema
+  // validate schema
   const result = OrderSchema.safeParse(parsed);
 
   if (!result.success) {
@@ -45,6 +53,6 @@ export async function extractOrderFromText(
     );
   }
 
-  // 5. Return typed data
+  // return typed data
   return result.data;
 }

@@ -1,6 +1,7 @@
 import { prisma } from "../../infra/db/prisma";
 
 export async function saveExtraction(params: {
+  userId: string;
   inputText: string;
   extractedData?: unknown;
   confidence?: number;
@@ -11,6 +12,7 @@ export async function saveExtraction(params: {
 }) {
   return prisma.aIExtraction.create({
     data: {
+      userId: params.userId,
       inputText: params.inputText,
       extractedData: params.extractedData ?? {},
       confidence: params.confidence ?? 0,
@@ -21,3 +23,4 @@ export async function saveExtraction(params: {
     },
   });
 }
+

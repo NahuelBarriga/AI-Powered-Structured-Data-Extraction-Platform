@@ -7,6 +7,7 @@ import {
     ErrorResponseDTO,
 } from "../../shared/DTO/resDTO";
 import { ExtractionError } from "../../shared/Errors/extractionError";
+import { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 
 const max_Retries = process.env.VITE_MAX_RETRIES
     ? parseInt(process.env.VITE_MAX_RETRIES)
@@ -14,7 +15,13 @@ const max_Retries = process.env.VITE_MAX_RETRIES
 
 export async function inputController(req: Request, res: Response) {
     let attempt = 1;
-    const { text } = req.body;
+    const request = new ReqOrderDTO(
+        req.body.sessionId,
+        req.body.text,
+        req.body.mode
+    );
+    const text = request.text;
+    const userId = req.user?.id || '1'; //todo: handle unauthenticated properly
     let currentText = text;
     if (!currentText || typeof currentText !== "string") {
         const errorResponse = new ErrorResponseDTO("Missing input text");
@@ -27,6 +34,7 @@ export async function inputController(req: Request, res: Response) {
             const successResponse = new SuccessResponseDTO(orderDTO);
 
             await saveExtraction({ //todo: maybe move to service layer
+                userId: userId,
                 inputText: currentText,
                 extractedData: result,
                 confidence: 1, // Assuming full confidence for now

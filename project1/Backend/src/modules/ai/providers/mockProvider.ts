@@ -7,7 +7,7 @@ import type {
 export class MockLLMProvider implements LLMProvider {
   async generate(request: LLMRequest): Promise<LLMResponse> {
     
-    console.log(request.userPrompt); //!remove
+    // console.log(request.userPrompt); //!remove
 
     return {
       provider: "mock",
@@ -17,15 +17,15 @@ export class MockLLMProvider implements LLMProvider {
           {
             name: "Cappuccino",
             quantity: 2,
-            notes: "with oat milk",
+            modifiers: "with oat milk",
           },
           {
             name: "Croissant",
             quantity: 1,
-            notes: null,
+            modifiers: null,
           },
         ],
-        customerNotes: "No sugar",
+        notes: "No sugar",
       }),
     };
   }

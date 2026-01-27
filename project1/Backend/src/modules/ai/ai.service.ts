@@ -20,7 +20,7 @@ export async function extractOrderFromText(
     jsonSchema: orderJsonSchema,
     inputText: input,
   };
-
+  console.log("Prompt Input:", promptInput); //!remove
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
 
@@ -31,7 +31,7 @@ export async function extractOrderFromText(
     userPrompt: prompt.user,
     temperature: 0,
   });
-
+  console.log("LLM Response:", response.content); //!remove
   // parse JSON
   let parsed: unknown;
   try {

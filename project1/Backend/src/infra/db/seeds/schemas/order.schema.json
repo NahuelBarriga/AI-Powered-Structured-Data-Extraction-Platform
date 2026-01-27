@@ -5,8 +5,8 @@
   "description": "Structured representation of a cafe or restaurant order extracted from free text.",
   "properties": {
     "order_type": {
-      "type": "string",
-      "enum": ["dine_in", "takeaway", "delivery"],
+      "type": ["string", "null"],
+      "enum": ["dine_in", "takeaway", "delivery", null],
       "description": "How the order will be fulfilled."
     },
     "items": {
@@ -31,22 +31,24 @@
             "description": "Customizations or modifiers for the item (e.g. no sugar, extra milk)."
           }
         },
-        "required": ["name", "quantity"]
+        "required": ["name", "quantity"],
+        "additionalProperties": false
       }
     },
     "payment_method": {
-      "type": "string",
-      "enum": ["cash", "card", "unknown"],
+      "type": ["string", "null"],
+      "enum": ["cash", "card", "unknown", null],
       "description": "Payment method if mentioned."
     },
     "customer_name": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Name of the customer if provided."
     },
     "notes": {
-      "type": "string",
+      "type": ["string", "null"],
       "description": "Additional order notes or instructions."
     }
   },
-  "required": ["items"]
+  "required": ["items"],
+  "additionalProperties": false
 }

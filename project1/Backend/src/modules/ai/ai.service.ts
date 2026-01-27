@@ -2,7 +2,7 @@ import { createLLMProvider } from "./providers/llmFactory";
 import { buildExtractionPrompt } from "./prompt/promptBuilder";
 import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
-import orderJsonSchema from "../../infra/db/seeds/schemas/order.schema.json";
+import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
 
 export async function extractOrderFromText(

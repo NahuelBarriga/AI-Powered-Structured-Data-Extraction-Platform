@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { extractOrderFromText } from "../ai/ai.service";
+import { saveExtraction } from "../repositories/extraction.repository";
 import {
     OrderCreateDTO,
     SuccessResponseDTO,
@@ -24,6 +25,16 @@ export async function inputController(req: Request, res: Response) {
             const result = await extractOrderFromText(currentText);
             const orderDTO = new OrderCreateDTO(result);
             const successResponse = new SuccessResponseDTO(orderDTO);
+
+            await saveExtraction({ //todo: maybe move to service layer
+                inputText: currentText,
+                extractedData: result,
+                confidence: 1, // Assuming full confidence for now
+                attempts: attempt,
+                status: "success",
+                provider: process.env.LLM_PROVIDER ?? "unknown",
+                model: process.env.OPENAI_MODEL ?? "unknown",
+            });
 
             return res.status(200).json(successResponse);
         } catch (error) {

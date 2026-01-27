@@ -1,15 +1,16 @@
 import type { LLMProvider } from "../providers/llmProvider";
 import { OpenAIProvider } from "../providers/openai.provider";
 import { MockLLMProvider } from "./mockProvider";
+import { LLM_PROVIDER, OPENAI_API_KEY, OPENAI_MODEL } from "../../../config/LLMConfig";
 
 export function createLLMProvider(): LLMProvider {
-    const provider = process.env.LLM_PROVIDER ?? "mock"; //todo: modify to only .env or config file
+    const provider = LLM_PROVIDER;
 
     switch (provider) {
         case "openai":
             return new OpenAIProvider(
-                process.env.OPENAI_API_KEY!,
-                process.env.OPENAI_MODEL ?? "gpt-4o-mini" //todo: modify too
+                OPENAI_API_KEY!,
+                OPENAI_MODEL || "gpt-3.5-turbo", 
             );
         case "mock":
             return new MockLLMProvider();

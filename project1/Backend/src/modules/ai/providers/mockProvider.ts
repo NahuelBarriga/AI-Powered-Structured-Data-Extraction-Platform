@@ -17,7 +17,7 @@ export class MockLLMProvider implements LLMProvider {
           {
             name: "Cappuccino",
             quantity: 2,
-            modifiers: "with oat milk",
+            note: "with oat milk", //fix
           },
           {
             name: "Croissant",

@@ -3,11 +3,7 @@ import { buildExtractionPrompt } from "./prompt/promptBuilder";
 import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
 import orderJsonSchema from "../../infra/db/seeds/schemas/order.schema.json";
-export class AIExtractionError extends Error {
-  constructor(message: string, public raw?: string) {
-    super(message);
-  }
-}
+import { ExtractionError } from "../../shared/Errors/extractionError";
 
 export async function extractOrderFromText(
   input: string
@@ -20,36 +16,35 @@ export async function extractOrderFromText(
     jsonSchema: orderJsonSchema,
     inputText: input,
   };
-  console.log("Prompt Input:", promptInput); //!remove
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
 
   // call LLM
-  const response = await llm.generate({
-    systemPrompt:
-      "You are a system that extracts structured data. Output only valid JSON.",
-    userPrompt: prompt.user,
-    temperature: 0,
-  });
-  console.log("LLM Response:", response.content); //!remove
+  const response = await llm
+    .generate({
+      systemPrompt:
+        "You are a system that extracts structured data. Output only valid JSON.",
+      userPrompt: prompt.user,
+      temperature: 0,
+    })
+    .catch((error) => {
+      throw new ExtractionError("LLM call failed", "LLM_FAILURE");
+    });
   // parse JSON
   let parsed: unknown;
   try {
     parsed = JSON.parse(response.content);
   } catch {
-    throw new AIExtractionError(
-      "Invalid JSON returned by LLM",
-      response.content
-    );
+    throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON");
   }
 
   // validate schema
   const result = OrderSchema.safeParse(parsed);
 
   if (!result.success) {
-    throw new AIExtractionError(
+    throw new ExtractionError(
       "LLM output does not match Order schema",
-      response.content
+      "SCHEMA_MISMATCH"
     );
   }
 

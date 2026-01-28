@@ -1,21 +1,23 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import { getSession } from "next-auth/react";
 
 // axios instance 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:3000",
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor - Add JWT token to requests
+// Request interceptor - Add JWT token from NextAuth session
 api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem("authToken");
+  async (config: InternalAxiosRequestConfig) => {
+    // Get session from NextAuth
+    const session = await getSession();
     
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (session?.accessToken && config.headers) {
+      config.headers.Authorization = `Bearer ${session.accessToken}`;
     }
     
     return config;
@@ -39,9 +41,8 @@ api.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // Unauthorized - clear token and redirect to login
-          localStorage.removeItem("authToken");
-          window.location.href = "/login";
+          // Unauthorized - handled by NextAuth
+          console.error("Unauthorized:", data?.error || "Authentication required");
           break;
         case 403:
           console.error("Forbidden:", data?.error || "Access denied");
@@ -101,19 +102,8 @@ export async function extractText(
   return response.data;
 }
 
-export async function login(email: string, password: string) {
-  const response = await api.post("/api/auth/login", {
-    email,
-    password,
-  });
-
-  // Store token on successful login
-  if (response.data.token) {
-    localStorage.setItem("authToken", response.data.token);
-  }
-
-  return response.data;
-}
+// Note: Login is now handled by NextAuth
+// Use signIn() from next-auth/react for authentication
 
 export async function register(
   email: string,
@@ -126,17 +116,11 @@ export async function register(
     name,
   });
 
-  // Store token on successful registration
-  if (response.data.token) {
-    localStorage.setItem("authToken", response.data.token);
-  }
-
   return response.data;
 }
 
-export async function logout() {
-  localStorage.removeItem("authToken");
-}
+// Note: Logout is now handled by NextAuth
+// Use signOut() from next-auth/react for logout
 
 export async function getCurrentUser() {
   const response = await api.get("/api/auth/me");

@@ -65,20 +65,21 @@ model usageCounter {
   count  Int    @default(0)
   user   User   @relation(fields: [userId], references: [id])
 
-  @@unique([userId, window])
+  @@unique([userId, window, type])
 }
 
 model UsageCost {
-  id        String   @id @default(uuid())
-  userId    String
-  date      DateTime
-  tokensIn  Int
-  tokensOut Int
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([userId, date])
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  sessionId    String?
+  extractionId String?
+  model        String
+  tokensIn     Int
+  tokensOut    Int
+  createdAt    DateTime @default(now())
 }
+
 
 enum ExtractionStatus {
   success

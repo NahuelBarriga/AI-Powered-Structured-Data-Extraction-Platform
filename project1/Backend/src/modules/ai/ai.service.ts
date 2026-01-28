@@ -6,8 +6,28 @@ import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 
-export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string): Promise<Order> {
+const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
+  ? parseInt(process.env.MAX_INPUT_LENGTH)
+  : 10000;
+
+export interface ExtractionResult {
+  order: Order;
+  tokensIn: number;
+  tokensOut: number;
+  model: string;
+}
+
+// calculate tokens roughly 1 token per 4 characters
+export function calculateTokens(text: string): number {
+  return Math.ceil(text.length / 4);
+}
+
+export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string): Promise<ExtractionResult> {
   const llm = createLLMProvider(); //todo: make it dynamic?
+
+  if (input.text.length > MAX_CHAR_LENGTH) {
+    throw new ExtractionError("Input text exceeds maximum length", "BUSINESS_RULE");
+  }
 
   const promptInput = {
     schemaName: "Order",
@@ -28,7 +48,7 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
       userPrompt: prompt.user,
       temperature: 0,
     })
-    .catch((error) => {
+    .catch((error) => { //!fix error handling
       throw new ExtractionError("LLM call failed", "LLM_FAILURE");
     });
   // parse JSON
@@ -49,6 +69,15 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
     );
   }
 
-  // return typed data
-  return result.data;
+  // Calculate tokens
+  const tokensIn = response.tokensIn ?? calculateTokens(prompt.user + (prompt.system || ''));
+  const tokensOut = response.tokensOut ?? calculateTokens(response.content);
+
+  // return typed data with token usage
+  return {
+    order: result.data,
+    tokensIn,
+    tokensOut,
+    model: response.model,
+  };
 }

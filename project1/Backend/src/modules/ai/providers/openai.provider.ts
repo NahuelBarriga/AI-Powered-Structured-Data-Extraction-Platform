@@ -30,6 +30,8 @@ export class OpenAIProvider implements LLMProvider {
       content: completion.choices[0]?.message?.content ?? "",
       model: this.model,
       provider: "openai",
+      tokensIn: completion.usage?.prompt_tokens ?? 0,
+      tokensOut: completion.usage?.completion_tokens ?? 0,
     };
   }
 }

@@ -2,13 +2,18 @@
 import { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import { ErrorResponseDTO, OrderCreateDTO, SuccessResponseDTO } from "../../shared/DTO/resDTO";
 import { ExtractionError } from "../../shared/Errors/extractionError";
-import { extractOrderFromText } from "../ai/ai.service";
+import { extractOrderFromText, calculateTokens } from "../ai/ai.service";
 import { saveExtraction } from "../repositories/extraction.repository";
 import { createSession, getLastExtractionFromSession } from "../repositories/session.repository";
+import { checkUserTokenLimit, createUsageCost } from "../repositories/usageCost.repository";
 
 const max_Retries = process.env.VITE_MAX_RETRIES
     ? parseInt(process.env.VITE_MAX_RETRIES)
     : 3;
+
+const MAX_TOKENS_PER_USER = process.env.MAX_TOKENS_PER_USER
+    ? parseInt(process.env.MAX_TOKENS_PER_USER)
+    : 10000;
 
 export async function inputService(order: ReqOrderDTO, id: string) {
     let attempt = 1;
@@ -24,6 +29,20 @@ export async function inputService(order: ReqOrderDTO, id: string) {
             version = lastExtraction.version + 1;
         }
     }
+
+    // Estimate tokens for the input
+    const estimatedTokens = calculateTokens(order.text);
+    
+    // Check if user has enough token quota
+    const tokenCheck = await checkUserTokenLimit(id, estimatedTokens, MAX_TOKENS_PER_USER);
+    
+    if (!tokenCheck.allowed) {
+        const errorResponse = new ErrorResponseDTO(
+            `Token limit exceeded. Current usage: ${tokenCheck.currentUsage}/${tokenCheck.limit} tokens per hour.`,
+            undefined
+        );
+        return errorResponse;
+    }
         
     const text = order.text;
     const userId = id;
@@ -32,20 +51,29 @@ export async function inputService(order: ReqOrderDTO, id: string) {
     while (attempt <= max_Retries) {
         try {
             const result = await extractOrderFromText(order, lastExtraction?.inputText);
-            const orderDTO = new OrderCreateDTO(result);
+            const orderDTO = new OrderCreateDTO(result.order);
             const successResponse = new SuccessResponseDTO(orderDTO);
 
-            await saveExtraction({
+            const savedExtraction = await saveExtraction({
                 userId: userId,
                 inputText: currentText,
-                extractedData: result,
+                extractedData: result.order,
                 version: version, 
-                confidence: 1, // Assuming full confidence for now
                 attempts: attempt,
                 status: "success",
                 provider: process.env.LLM_PROVIDER ?? "unknown",
-                model: process.env.OPENAI_MODEL ?? "unknown",
+                model: result.model,
                 sessionId: order.sessionId,
+            });
+
+            // Save usage cost with session and extraction IDs
+            await createUsageCost({
+                userId: userId,
+                sessionId: order.sessionId,
+                extractionId: savedExtraction.id,
+                model: result.model,
+                tokensIn: result.tokensIn,
+                tokensOut: result.tokensOut,
             });
 
             return successResponse;

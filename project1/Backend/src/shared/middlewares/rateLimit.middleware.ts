@@ -5,6 +5,12 @@ import { RATE_LIMITS } from "../../config/rateLimits";
 export async function rateLimit(req: Request, res: Response, next: NextFunction) {
   const userId = req.user?.id;
 
+  if (!userId) {
+    return res.status(401).json({
+      error: "Unauthorized"
+    });
+  }
+
   for (const rule of RATE_LIMITS) {
     const window = rule.windowFn();
 

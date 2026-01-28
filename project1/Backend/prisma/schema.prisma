@@ -23,6 +23,8 @@ model User {
 
   extractions       AIExtraction[]
   ExtractionSession ExtractionSession[]
+  usageCounter      usageCounter[]
+  UsageCost         UsageCost[]
 }
 
 model ExtractionSession {
@@ -46,12 +48,36 @@ model AIExtraction {
   attempts      Int
   status        ExtractionStatus
   model         String
-  tokens        Int
+  tokensIn      Int
+  tokenOut      Int
   createdAt     DateTime         @default(now())
   User          User?            @relation(fields: [userId], references: [id])
   userId        String?
 
   @@unique([sessionId, version])
+}
+
+model usageCounter {
+  id     String @id @default(uuid())
+  userId String
+  window String // e.g. "2026-01-28T11"
+  type   String
+  count  Int    @default(0)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, window])
+}
+
+model UsageCost {
+  id        String   @id @default(uuid())
+  userId    String
+  date      DateTime
+  tokensIn  Int
+  tokensOut Int
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, date])
 }
 
 enum ExtractionStatus {

@@ -1,13 +1,9 @@
 import { Router } from "express";
 import { inputController } from "./input.controller";
-// import { authenticateJWT } from "../middlewares/auth.middleware";
+import { authMiddleware } from "../../shared/middlewares/auth.middleware";
 
 const router = Router();
 
-router.post(
-  "/",
-  // authenticateJWT,     //todo: implement
-  inputController
-);
+router.post("/", authMiddleware, inputController);
 
 export default router;

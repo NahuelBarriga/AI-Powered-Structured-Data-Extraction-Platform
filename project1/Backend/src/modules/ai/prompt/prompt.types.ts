@@ -3,10 +3,11 @@ export interface PromptBuildInput {
   schemaDescription?: string;
   jsonSchema: object;
   inputText: string;
+  lastExtraction?: string;
+  inputMode?: 'new' | 'retry' | 'refine';
 }
 
 export interface BuiltPrompt {
-  version: string;
   system: string;
   user: string;
 }

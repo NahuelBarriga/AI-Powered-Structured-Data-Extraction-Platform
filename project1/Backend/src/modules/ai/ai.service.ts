@@ -4,17 +4,18 @@ import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
 import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
+import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 
-export async function extractOrderFromText(
-  input: string
-): Promise<Order> {
+export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string): Promise<Order> {
   const llm = createLLMProvider(); //todo: make it dynamic?
 
   const promptInput = {
     schemaName: "Order",
     schemaDescription: "A purchase order with items, quantities, and notes.",
     jsonSchema: orderJsonSchema,
-    inputText: input,
+    inputText: input.text,
+    lastExtraction: lastExtraction || '',
+    inputMode: input.mode,
   };
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);

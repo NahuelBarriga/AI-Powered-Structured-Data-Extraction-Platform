@@ -9,6 +9,8 @@ export async function saveExtraction(params: {
   status: "success" | "failed";
   provider: string;
   model: string;
+  sessionId: string;
+  version: number;
 }) {
   return prisma.aIExtraction.create({
     data: {
@@ -20,6 +22,8 @@ export async function saveExtraction(params: {
       status: params.status,
       provider: params.provider,
       model: params.model,
+      sessionId: params.sessionId,
+      version: params.version,
     },
   });
 }

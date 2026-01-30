@@ -1,10 +1,10 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
-import { getSession } from "next-auth/react";
 
 // axios instance 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   timeout: 30000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,27 +13,23 @@ const api = axios.create({
 const baseApi = axios.create({ //for auth porposes, without interceptors
   baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
   timeout: 30000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Request interceptor - Add JWT token from NextAuth session
-api.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    // Get session from NextAuth
-    const session = await getSession();
+// api.interceptors.request.use(
+//   async (config: InternalAxiosRequestConfig) => {
+//     // Get session from NextAuth
 
-    if (session?.accessToken && config.headers) {
-      config.headers.Authorization = `Bearer ${session.accessToken}`;
-    }
 
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+//     return config;
+//   },
+//   (error) => {
+//     return Promise.reject(error);
+//   }
+// );
 
 // Response interceptor - Handle errors globally
 api.interceptors.response.use(

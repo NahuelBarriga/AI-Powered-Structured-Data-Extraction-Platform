@@ -1,4 +1,3 @@
-import { jwt } from "zod/v4/classic/external.cjs";
 import { prisma } from "../../infra/db/prisma";
 import { UserDataDTO } from "../../shared/DTO/authDTO";
 

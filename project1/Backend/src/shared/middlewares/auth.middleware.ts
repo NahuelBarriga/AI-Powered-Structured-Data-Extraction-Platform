@@ -1,30 +1,31 @@
-import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import { prisma } from "../../infra/db/prisma";
+import type { Request, Response, NextFunction } from "express";
 
-export interface AuthRequest extends Request {
-  userId?: string;
-}
+const JWT_SECRET = process.env.JWT_SECRET!;
 
-
-
-export function tenantAuth(req: AuthRequest, res: Response, next: NextFunction) {
-  const auth = req.headers.authorization;
-
-  if (!auth) {
-    return res.status(401).json({ error: "Missing token" });
-  }
-
-  const token = req.cookies?.session;
-  if (!token) {
-    return res.status(401).json({ error: "Not authenticated" });
-  }
-
+export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
-    req.userId = payload.sub;
-    next();
-  } catch {
-    return res.status(401).json({ error: "Invalid token" });
+    // 1️⃣ Try JWT from cookie
+    const token = req.cookies?.session;
+
+    if (token) {
+      try {
+        const payload = jwt.verify(token, JWT_SECRET) as any;
+        if (!payload.sub || typeof payload.sub !== "string") {
+          return res.status(401).json({ error: "Unauthorized" });
+        }
+        req.user = {
+          id: payload.sub
+        };
+        // req.authType = "session";
+        return next();
+      } catch (err) {
+        
+      }
+    }
+
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized" });
   }
 }
-

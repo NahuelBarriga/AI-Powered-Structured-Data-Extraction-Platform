@@ -6,10 +6,12 @@ import { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import { inputService } from "./input.service";
 
 export async function inputController(req: Request, res: Response) {
+    console.log("Input Controller called"); //!debug
+    console.log(req.body); //!debug
     const request = new ReqOrderDTO(
-        req.body.sessionId,
-        req.body.text,
-        req.body.mode
+        req.body?.sessionId,
+        req.body?.text,
+        req.body?.mode
     );
 
     if (!request.text || typeof request.text !== "string") {

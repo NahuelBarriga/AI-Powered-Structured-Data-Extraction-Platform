@@ -12,7 +12,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   useEffect(() => { //on mount
     const onboard = async () => {
       try {
-        await apiClient.baseApi.post("/api/onboard");
+        await apiClient.baseApi.post("/api/onboard", {});
       } catch {
         // does nothing if already onboarded
       }

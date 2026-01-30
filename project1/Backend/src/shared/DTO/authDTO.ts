@@ -5,34 +5,27 @@ export interface RegisterRequestDTO {
   name: string;
 }
 
-export interface LoginRequestDTO {
-  email: string;
-  password: string;
-}
+
 
 // Response DTOs
 export class AuthResponseDTO {
-  token: string;
   user: UserDataDTO;
-  expiresIn: string;
+  jwt: string;
 
-  constructor(token: string, user: UserDataDTO, expiresIn: string) {
-    this.token = token;
+  constructor(user: UserDataDTO, jwt: string) {
     this.user = user;
-    this.expiresIn = expiresIn;
+    this.jwt = jwt;
   }
 }
 
 export class UserDataDTO {
   id: string;
-  email: string;
-  name: string;
   createdAt: Date;
+  apiKey: string;
 
-  constructor(id: string, email: string, name: string, createdAt: Date) {
+  constructor(id: string, apiKey: string, createdAt: Date) {
     this.id = id;
-    this.email = email;
-    this.name = name;
+    this.apiKey = apiKey;
     this.createdAt = createdAt;
   }
 }

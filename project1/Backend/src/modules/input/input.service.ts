@@ -3,9 +3,9 @@ import { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import { ErrorResponseDTO, OrderCreateDTO, SuccessResponseDTO } from "../../shared/DTO/resDTO";
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import { extractOrderFromText, calculateTokens } from "../ai/ai.service";
-import { saveExtraction } from "../repositories/extraction.repository";
-import { createSession, getLastExtractionFromSession } from "../repositories/session.repository";
-import { checkUserTokenLimit, createUsageCost } from "../repositories/usageCost.repository";
+import { saveExtraction } from "./input.repository";
+import { createSession, getLastExtractionFromSession } from "../control/session.repository";
+import { checkUserTokenLimit, createUsageCost } from "../control/usageCost.repository";
 
 const max_Retries = process.env.VITE_MAX_RETRIES
     ? parseInt(process.env.VITE_MAX_RETRIES)

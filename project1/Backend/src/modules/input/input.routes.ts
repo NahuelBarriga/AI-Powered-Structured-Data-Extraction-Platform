@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { inputController } from "./input.controller";
-import { authMiddleware } from "../../shared/middlewares/auth.middleware";
+import { apiKeyAuth  } from "../../shared/middlewares/apiKeyAuth.middleware";
 
 const router = Router();
 
-router.post("/", authMiddleware, inputController);
+router.post("/", apiKeyAuth, inputController);
 
 export default router;
+    

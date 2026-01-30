@@ -6,15 +6,15 @@ export async function middleware(request: NextRequest) {
   const session = await auth();
   const isLoginPage = request.nextUrl.pathname.startsWith("/login");
 
-  // Redirect to login if not authenticated and trying to access protected routes
-  if (!session && !isLoginPage) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
+  // Redirect to login if not authenticated and trying to access protected routes //!turn on later
+  // if (!session && !isLoginPage) {
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
 
-  // Redirect to home if authenticated and trying to access login page
-  if (session && isLoginPage) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
+  // // Redirect to home if authenticated and trying to access login page
+  // if (session && isLoginPage) {
+  //   return NextResponse.redirect(new URL("/", request.url));
+  // }
 
   return NextResponse.next();
 }

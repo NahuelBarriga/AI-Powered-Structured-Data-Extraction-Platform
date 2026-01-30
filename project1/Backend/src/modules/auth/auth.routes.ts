@@ -1,14 +1,10 @@
 import { Router } from "express";
-import { registerController, loginController, getMeController } from "./auth.controller";
-import { authMiddleware } from "../../shared/middlewares/auth.middleware";
+import { registerController } from "./auth.controller";
 
 const router = Router();
 
 // Public routes
-router.post("/register", registerController);
-router.post("/login", loginController);
+router.post("/onboarding", registerController);
 
-// Protected routes
-router.get("/me", authMiddleware, getMeController);
 
 export default router;

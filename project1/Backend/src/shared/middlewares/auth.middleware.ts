@@ -1,62 +1,30 @@
 import type { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { ErrorResponseDTO } from "../DTO/resDTO";
 
-export interface JWTPayload {
-  userId: string;
-  email: string;
-  iat?: number;
-  exp?: number;
+export interface AuthRequest extends Request {
+  userId?: string;
 }
 
-export async function authMiddleware(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+
+
+export function tenantAuth(req: AuthRequest, res: Response, next: NextFunction) {
+  const auth = req.headers.authorization;
+
+  if (!auth) {
+    return res.status(401).json({ error: "Missing token" });
+  }
+
+  const token = req.cookies?.session;
+  if (!token) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
   try {
-    // extract token from auth header
-    const authHeader = req.headers.authorization;
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      const errorResponse = new ErrorResponseDTO(
-        "No token provided or invalid format"
-      );
-      res.status(401).json(errorResponse);
-      return;
-    }
-
-    const token = authHeader.substring(7); // Remove 'Bearer ' 
-
-    // Verify token
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-      throw new Error("JWT_SECRET not configured");
-    }
-
-    const decoded = jwt.verify(token, secret) as JWTPayload;
-
-    // attach user info to req
-    req.user = {
-      id: decoded.userId, //todo: add more user info
-    //   email: decoded.email,
-    };
-
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    req.userId = payload.sub;
     next();
-  } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      const errorResponse = new ErrorResponseDTO("Token expired");
-      res.status(401).json(errorResponse);
-      return;
-    }
-
-    if (error instanceof jwt.JsonWebTokenError) {
-      const errorResponse = new ErrorResponseDTO("Invalid token");
-      res.status(401).json(errorResponse);
-      return;
-    }
-
-    const errorResponse = new ErrorResponseDTO("Authentication failed");
-    res.status(401).json(errorResponse);
+  } catch {
+    return res.status(401).json({ error: "Invalid token" });
   }
 }
+

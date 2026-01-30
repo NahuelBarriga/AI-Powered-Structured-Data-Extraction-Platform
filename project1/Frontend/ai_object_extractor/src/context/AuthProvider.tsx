@@ -1,8 +1,25 @@
 "use client";
 
-import { SessionProvider } from "next-auth/react";
-import { ReactNode } from "react";
+import { useEffect } from "react";
+import type { ReactNode } from "react";
+import apiClient from "@/src/lib/api";
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+type AuthProviderProps = {
+  children: ReactNode;
+};
+
+export function AuthProvider({ children }: AuthProviderProps) {
+  useEffect(() => { //on mount
+    const onboard = async () => {
+      try {
+        await apiClient.baseApi.post("/api/onboard");
+      } catch {
+        // does nothing if already onboarded
+      }
+    };
+
+    void onboard();
+  }, []);
+
+  return <>{children}</>;
 }

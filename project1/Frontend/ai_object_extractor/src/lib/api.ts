@@ -10,16 +10,24 @@ const api = axios.create({
   },
 });
 
+const baseApi = axios.create({ //for auth porposes, without interceptors
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000",
+  timeout: 30000,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 // Request interceptor - Add JWT token from NextAuth session
 api.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     // Get session from NextAuth
     const session = await getSession();
-    
+
     if (session?.accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${session.accessToken}`;
     }
-    
+
     return config;
   },
   (error) => {
@@ -86,46 +94,9 @@ api.interceptors.response.use(
   }
 );
 
-// API Methods
-
-export async function extractText(
-  text: string,
-  sessionId?: string,
-  mode: "create" | "refine" = "create"
-) {
-  const response = await api.post("/api/input", {
-    text,
-    sessionId,
-    mode,
-  });
-
-  return response.data;
-}
-
-// Note: Login is now handled by NextAuth
-// Use signIn() from next-auth/react for authentication
-
-export async function register(
-  email: string,
-  password: string,
-  name: string
-) {
-  const response = await api.post("/api/auth/register", {
-    email,
-    password,
-    name,
-  });
-
-  return response.data;
-}
-
-// Note: Logout is now handled by NextAuth
-// Use signOut() from next-auth/react for logout
-
-export async function getCurrentUser() {
-  const response = await api.get("/api/auth/me");
-  return response.data;
-}
 
 // Export the configured axios instance for custom calls
-export default api;
+export default {
+  api,
+  baseApi
+};

@@ -12,7 +12,7 @@ export function parseAIResponse(rawResponse: string): ParsedAIResponse {
       success: true,
       data: parsed
     };
-  } catch (error) { //todo: recovery logic? 
+  } catch (error) { //TODO: recovery logic? 
     return {
       success: false,
       error: "Failed to parse AI response as valid JSON"

@@ -1,6 +1,5 @@
 //testing porposes
 import type { Request, Response } from "express";
-import { extractOrderFromText } from "./ai.service";
 
 export async function extractOrderController(
   req: Request,
@@ -15,8 +14,8 @@ export async function extractOrderController(
   }
 
   try {
-    const order = await extractOrderFromText(text);
-    return res.json(order);
+    // const order = await extractOrderFromText(text); //deprecated call method
+    // return res.json(order);
   } catch (error: any) {
     return res.status(500).json({
       error: error.message,

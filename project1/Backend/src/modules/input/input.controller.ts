@@ -17,11 +17,11 @@ export async function inputController(req: Request, res: Response) {
         return res.status(400).json(errorResponse);
     }
     try {
-        const result = await inputService(request, req.user?.id || '1'); //todo: handle unauthenticated properly
+        const result = await inputService(request, req.user?.id || '1'); //TODO: handle unauthenticated properly
         return res.status(200).json(result);
     } catch (error) {
         res.status(422).json(new ErrorResponseDTO(
-            error instanceof Error ? error.message : "Invalid input", //todo: check if handled correctly
+            error instanceof Error ? error.message : "Invalid input", //TODO: check if handled correctly
             error instanceof Error ? error.stack : undefined
         ));
     }

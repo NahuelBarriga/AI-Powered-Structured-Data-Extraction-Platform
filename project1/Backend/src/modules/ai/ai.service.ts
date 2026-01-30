@@ -22,8 +22,8 @@ export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string): Promise<ExtractionResult> {
-  const llm = createLLMProvider(); //todo: make it dynamic?
+export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string, userId?: string): Promise<ExtractionResult> {
+  const llm = createLLMProvider(); //TODO: make it dynamic?
 
   if (input.text.length > MAX_CHAR_LENGTH) {
     throw new ExtractionError("Input text exceeds maximum length", "BUSINESS_RULE");
@@ -36,6 +36,7 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
     inputText: input.text,
     lastExtraction: lastExtraction || '',
     inputMode: input.mode,
+    userId: userId,
   };
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);

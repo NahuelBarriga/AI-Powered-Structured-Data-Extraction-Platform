@@ -17,6 +17,10 @@ export function buildExtractionPrompt(input: PromptBuildInput): BuiltPrompt {
     JSON Schema:
     ${JSON.stringify(input.jsonSchema, null, 2)}
 
+    Tenant-ID: ${input.tenantId}
+    You are operating ONLY on this tenant's data.
+    Never reference other sessions or users.
+
     Input text:
     """
     ${input.inputText}
@@ -27,6 +31,10 @@ export function buildExtractionPrompt(input: PromptBuildInput): BuiltPrompt {
     userPrompt = `
     JSON Schema:
     ${JSON.stringify(input.jsonSchema, null, 2)}
+    
+    Tenant-ID: ${input.tenantId}
+    You are operating ONLY on this tenant's data.
+    Never reference other sessions or users.
 
     Previous extraction (that had issues):
     ${input.lastExtraction || 'None'}
@@ -41,6 +49,10 @@ export function buildExtractionPrompt(input: PromptBuildInput): BuiltPrompt {
     userPrompt = `
     JSON Schema:
     ${JSON.stringify(input.jsonSchema, null, 2)}
+    
+    Tenant-ID: ${input.tenantId}
+    You are operating ONLY on this tenant's data.
+    Never reference other sessions or users.
 
     Previous extraction:
     ${input.lastExtraction || 'None'}

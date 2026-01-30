@@ -13,6 +13,7 @@ ${schemaDescription ? `Schema description: ${schemaDescription}` : ""}
 
 Rules:
 - Only extract information explicitly present in the text.
+- You must only use the content provided by the system.
 - Do NOT guess or infer missing information.
 - Do NOT add fields that are not defined in the schema.
 - If a field is not mentioned, omit it.

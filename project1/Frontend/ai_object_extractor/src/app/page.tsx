@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import InputForm from "@/src/components/InputForm";
-import { extractText } from "@/src/lib/api";
+import { submitOrder } from "../lib/helpers/orderHelper";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
@@ -13,7 +13,7 @@ export default function HomePage() {
     setError(null);
 
     try {
-      const res = await extractText(text);
+      const res = await submitOrder(text);
       window.location.href = `/results/${res.sessionId}`;
     } catch {
       setError("Failed to extract order.");

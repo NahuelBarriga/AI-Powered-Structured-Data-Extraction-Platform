@@ -5,6 +5,7 @@ export interface PromptBuildInput {
   inputText: string;
   lastExtraction?: string;
   inputMode?: 'new' | 'retry' | 'refine';
+  tenantId?: string;
 }
 
 export interface BuiltPrompt {

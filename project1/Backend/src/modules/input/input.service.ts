@@ -50,7 +50,7 @@ export async function inputService(order: ReqOrderDTO, id: string) {
 
     while (attempt <= max_Retries) {
         try {
-            const result = await extractOrderFromText(order, lastExtraction?.inputText);
+            const result = await extractOrderFromText(order, lastExtraction?.inputText, userId);
             const orderDTO = new OrderCreateDTO(result.order);
             const successResponse = new SuccessResponseDTO(orderDTO);
 
@@ -90,7 +90,7 @@ export async function inputService(order: ReqOrderDTO, id: string) {
                 return errorResponse;
             }
             attempt++;
-            currentText = buildRetryInput(text, error); //todo: could add previous attempts info 
+            currentText = buildRetryInput(text, error); //TODO: could add previous attempts info 
         }
     }
 }

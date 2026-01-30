@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   description: "Extract structured data from text using AI",
 };
 
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +29,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

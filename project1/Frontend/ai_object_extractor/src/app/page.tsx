@@ -3,10 +3,12 @@
 import { useState } from "react";
 import InputForm from "@/src/components/InputForm";
 import { submitOrder } from "../lib/helpers/orderHelper";
+import { useNavigation } from "@/src/lib/hooks/useNavigation";
 
 export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { push } = useNavigation();
 
   async function handleSubmit(text: string) {
     setLoading(true);
@@ -14,7 +16,9 @@ export default function HomePage() {
 
     try {
       const res = await submitOrder(text);
-      window.location.href = `/results/${res.sessionId}`;
+      if (res.success === true) { 
+        push(`/results/${res.data.sessionId}`);
+      } //TODO: else show error
     } catch {
       setError("Failed to extract order.");
     } finally {

@@ -59,13 +59,14 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
   } catch {
     throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON");
   }
-
+  console.log("Parsed LLM response:", parsed); //!debug
   // validate schema
   const result = OrderSchema.safeParse(parsed);
 
   if (!result.success) {
+    console.error("Schema validation errors:", result.error.message);
     throw new ExtractionError(
-      "LLM output does not match Order schema",
+      `LLM output does not match Order schema: ${JSON.stringify(result.error.message)}`,
       "SCHEMA_MISMATCH"
     );
   }

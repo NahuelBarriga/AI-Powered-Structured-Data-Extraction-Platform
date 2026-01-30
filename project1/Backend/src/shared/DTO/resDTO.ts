@@ -1,3 +1,4 @@
+import type { JsonObject } from "@prisma/client/runtime/library";
 import type { Order } from "../../modules/ai/schemas/order.schema";
 
 export class OrderItemDTO {
@@ -42,13 +43,28 @@ export class OrderCreateDTO {
 
 export class SuccessResponseDTO<T> {
   success: true;
-  data: T;
+  data: {
+    result: JsonObject,
+    sessionId: string,
+    model: string,
+    timestamp: string,
+    version: number,
+    id: string
+  };
 
-  constructor(data: T) {
+  constructor(result: JsonObject, sessionId?: string, model?: string, timestamp?: string, version?: number, id?: string) {
     this.success = true;
-    this.data = data;
-  }
+    this.data = {
+      result: result,
+      sessionId: sessionId || "",
+      model: model || "",
+      timestamp: timestamp || "",
+      version: version || 1,
+      id: id || ""
+    };
+  };
 }
+
 
 export class ErrorResponseDTO {
   success: false;

@@ -3,7 +3,7 @@ import { prisma } from "../../infra/db/prisma";
 export async function saveExtraction(params: {
   userId: string;
   inputText: string;
-  extractedData?: unknown;
+  extractedData?: unknown; //TODO: define type
   attempts: number;
   status: "success" | "failed";
   provider: string;

@@ -9,3 +9,8 @@ export const submitOrder = async (orderData: string): Promise<any> => { //TODO: 
     }); //TODO: catch errors 
     return response.data;
 }
+
+export const getSessionResults = async (sessionId: string): Promise<any> => { //TODO: define return type 
+    const response = await api.get(`/api/order/session/${sessionId}`); //TODO: catch errors
+    return response.data;
+}

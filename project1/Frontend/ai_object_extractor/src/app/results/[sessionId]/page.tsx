@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import InputForm from "@/src/components/InputForm";
-import { extractText } from "@/src/lib/api";
+import { getSessionResults } from "@/src/lib/helpers/orderHelper";
 
 export default function ResultsPage({
   params,
@@ -19,7 +19,7 @@ export default function ResultsPage({
     setStatus("thinking");
 
     try {
-      const res = await extractText(text, sessionId);
+      const res = await getSessionResults(sessionId);
       setOutput(res);
       setStatus("done");
     } catch {

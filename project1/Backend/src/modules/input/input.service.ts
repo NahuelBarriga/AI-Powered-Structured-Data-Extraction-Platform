@@ -51,8 +51,10 @@ export async function inputService(order: ReqOrderDTO, id: string) {
     while (attempt <= max_Retries) {
         try {
             const result = await extractOrderFromText(order, lastExtraction?.inputText, userId);
-            const orderDTO = new OrderCreateDTO(result.order);
-            const successResponse = new SuccessResponseDTO(orderDTO);
+            const resultOrder = { 
+                ...result.order,
+            }
+            
 
             const savedExtraction = await saveExtraction({
                 userId: userId,
@@ -65,6 +67,8 @@ export async function inputService(order: ReqOrderDTO, id: string) {
                 model: result.model,
                 sessionId: order.sessionId,
             });
+
+            const successResponse = new SuccessResponseDTO(result.order, order.sessionId, result.model, savedExtraction.createdAt.toISOString(), version, savedExtraction?.id);
 
             // Save usage cost with session and extraction IDs
             await createUsageCost({

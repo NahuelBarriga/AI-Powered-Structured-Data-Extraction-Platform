@@ -5,9 +5,11 @@ import { useState } from "react";
 export default function InputForm({
   onSubmit,
   loading,
+  placeholder = "Paste or type the order text here...",
 }: {
   onSubmit: (text: string) => void;
   loading: boolean;
+  placeholder?: string;
 }) {
   const [text, setText] = useState("");
 
@@ -16,13 +18,14 @@ export default function InputForm({
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(text);
+        setText("");
       }}
       className="space-y-4"
     >
       <textarea
         className="w-full border rounded p-3"
         rows={6}
-        placeholder="Paste or type the order text here..."
+        placeholder={placeholder}
         value={text}
         onChange={(e) => setText(e.target.value)}
       />

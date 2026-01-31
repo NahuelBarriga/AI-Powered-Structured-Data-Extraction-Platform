@@ -1,52 +1,175 @@
 "use client";
 
-import { useState } from "react";
-import InputForm from "@/src/components/InputForm";
-import { getSessionResults } from "@/src/lib/helpers/orderHelper";
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { getSessionResults, submitOrder } from "@/src/lib/helpers/orderHelper";
+import { useNavigation } from "@/src/lib/hooks/useNavigation";
+import ExtractionDisplay from "@/src/components/session/ExtractionDisplay";
+import ExtractionNavigation from "@/src/components/session/ExtractionNavigation";
+import SessionInfo from "@/src/components/session/SessionInfo";
+import ActionButtons from "@/src/components/session/ActionButtons";
+import RefineSection from "@/src/components/session/RefineSection";
+import ErrorMessage from "@/src/components/session/ErrorMessage";
+import { SessionData } from "@/src/types/session.type";
 
-export default function ResultsPage({
-  params,
-}: {
-  params: { sessionId: string };
-}) {
-  const { sessionId } = params;
-  const [output, setOutput] = useState<any>(null);
-  const [status, setStatus] = useState<
-    "idle" | "thinking" | "done" | "error"
-  >("idle");
 
-  async function refine(text: string) {
-    setStatus("thinking");
 
+export default function ResultsPage() {
+  const params = useParams();
+  const sessionId = params.sessionId as string;
+  const { push } = useNavigation();
+  
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [status, setStatus] = useState<"idle" | "loading" | "refining" | "done" | "error">(
+    "loading"
+  );
+  const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Load session data on mount
+  useEffect(() => {
+    loadSessionData();
+  }, [sessionId]);
+
+  useEffect(() => { //!debug
+    console.log(sessionData)
+  }, [sessionData]);
+
+  async function loadSessionData() {
+    setStatus("loading");
+    setError(null);
     try {
-      const res = await getSessionResults(sessionId);
-      setOutput(res);
-      setStatus("done");
-    } catch {
+      const data = await getSessionResults(sessionId);
+      setSessionData(data);
+      setStatus("done");  
+      if (data.extractions.length > 0) {
+        setCurrentIndex(data.extractions.length - 1); // Start with last extraction
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load session data"
+      );
       setStatus("error");
     }
   }
 
+  async function handleRefine(text: string) {
+    setStatus("refining");
+    setError(null);
+
+    try {
+      await submitOrder(text, sessionId, 'refine');
+      // Reload session data to get new extraction
+      await loadSessionData();
+      setStatus("idle");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to refine extraction");
+      setStatus("error");
+    }
+  }
+
+  async function handleRetry() {
+    if (!currentExtraction) return;
+    
+    setStatus("refining");
+    setError(null);
+
+    try {
+      await submitOrder(currentExtraction.inputText, sessionId, 'retry');
+      // Reload session data
+      await loadSessionData();
+      setStatus("idle");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to retry extraction");
+      setStatus("error");
+    }
+  }
+
+  function copyToClipboard() {
+    if (!currentExtraction) return;
+    
+    const jsonString = JSON.stringify(currentExtraction.extractedData, null, 2);
+    navigator.clipboard.writeText(jsonString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const currentExtraction =
+    sessionData && sessionData.extractions.length > 0
+      ? sessionData.extractions[currentIndex]
+      : null;
+
+  if (status === "loading") {
+    return (
+      <main className="max-w-4xl mx-auto p-6">
+        <p className="text-gray-500">Loading session...</p>
+      </main>
+    );
+  }
+
+  if (status === "error" || !sessionData) {
+    return (
+      <main className="max-w-4xl mx-auto p-6">
+        <p className="text-red-500 mb-4">{error || "Failed to load session"}</p>
+        <button
+          onClick={() => push("/")}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+        >
+          Back to Home
+        </button>
+      </main>
+    );
+  }
+
   return (
-    <main className="max-w-3xl mx-auto p-6">
-      <h2 className="text-xl font-semibold mb-4">
-        Extracted Order
-      </h2>
+    <main className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold mb-6">Extraction Results</h1>
 
-      {status === "thinking" && <p>AI is thinking…</p>}
-      {status === "error" && (
-        <p className="text-red-500">Something went wrong.</p>
+      {/* Session Information */}
+      <SessionInfo 
+        sessionId={sessionData.session.id}
+        createdAt={sessionData.session.createdAt}
+      />
+
+      {/* Navigation between extractions */}
+      <ExtractionNavigation
+        currentIndex={currentIndex}
+        totalExtractions={sessionData.totalExtractions}
+        version={currentExtraction?.version || 0}
+        onPrevious={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
+        onNext={() =>
+          setCurrentIndex(
+            Math.min(sessionData.extractions.length - 1, currentIndex + 1)
+          )
+        }
+      />
+
+      {/* Current Extraction Display */}
+      {currentExtraction && (
+        <ExtractionDisplay
+          extraction={currentExtraction}
+          onCopy={copyToClipboard}
+          copied={copied}
+        />
       )}
 
-      {output && (
-        <pre className="bg-gray-100 p-4 rounded text-sm overflow-x-auto">
-          {JSON.stringify(output.data, null, 2)}
-        </pre>
-      )}
+      {/* Error message */}
+      {error && <ErrorMessage message={error} />}
 
-      <div className="mt-6">
-        <InputForm onSubmit={refine} loading={status === "thinking"} />
-      </div>
+      {/* Action Buttons */}
+      <ActionButtons
+        onRetry={handleRetry}
+        onNewExtraction={() => push("/")}
+        loading={status === "refining"}
+        disabled={!currentExtraction}
+      />
+
+      {/* Refine Section */}
+      <RefineSection
+        onSubmit={handleRefine}
+        loading={status === "refining"}
+      />
     </main>
   );
 }

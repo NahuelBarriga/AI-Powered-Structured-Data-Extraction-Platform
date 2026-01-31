@@ -2,10 +2,11 @@ import apiClient from "@/src/lib/api";
 
 const api = apiClient.api;
 
-export const submitOrder = async (orderData: string): Promise<any> => { //TODO: define return type
+export const submitOrder = async (orderData: string, sessionId?: string, mode?: string): Promise<any> => { //TODO: define return type
     const response = await api.post("/api/order", { 
         text: orderData,
-        mode: 'new'
+        mode: mode ? mode : sessionId ? 'retry' : 'new',
+        sessionId: sessionId,
     }); //TODO: catch errors 
     return response.data;
 }

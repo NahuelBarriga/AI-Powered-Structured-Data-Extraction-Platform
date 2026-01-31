@@ -4,7 +4,7 @@ import { ErrorResponseDTO, OrderCreateDTO, SuccessResponseDTO } from "../../shar
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import { extractOrderFromText, calculateTokens } from "../ai/ai.service";
 import { saveExtraction } from "./input.repository";
-import { createSession, getLastExtractionFromSession } from "../control/session.repository";
+import { createSession, getLastExtractionFromSession, getSessionWithExtractions} from "../control/session.repository";
 import { checkUserTokenLimit, createUsageCost } from "../control/usageCost.repository";
 
 const max_Retries = process.env.VITE_MAX_RETRIES
@@ -50,11 +50,7 @@ export async function inputService(order: ReqOrderDTO, id: string) {
 
     while (attempt <= max_Retries) {
         try {
-            const result = await extractOrderFromText(order, lastExtraction?.inputText, userId);
-            const resultOrder = { 
-                ...result.order,
-            }
-            
+            const result = await extractOrderFromText(order, lastExtraction?.extractedData, userId);
 
             const savedExtraction = await saveExtraction({
                 userId: userId,
@@ -66,9 +62,18 @@ export async function inputService(order: ReqOrderDTO, id: string) {
                 provider: process.env.LLM_PROVIDER ?? "unknown",
                 model: result.model,
                 sessionId: order.sessionId,
+                uncertainty: result.uncertainty,
             });
 
-            const successResponse = new SuccessResponseDTO(result.order, order.sessionId, result.model, savedExtraction.createdAt.toISOString(), version, savedExtraction?.id);
+            const successResponse = new SuccessResponseDTO(
+                result.order, 
+                order.sessionId, 
+                result.model, 
+                savedExtraction.createdAt.toISOString(), 
+                version, 
+                savedExtraction?.id,
+                result.uncertainty
+            );
 
             // Save usage cost with session and extraction IDs
             await createUsageCost({
@@ -117,3 +122,12 @@ Original input:
 ${originalText}
 `;
 };
+
+
+export const getSessionResults = async (sessionId: string) => {
+    try { 
+        return await getSessionWithExtractions(sessionId);
+    } catch (error) {
+        throw error;
+    }
+}

@@ -2,7 +2,7 @@ import rateLimit from "express-rate-limit";
 
 export const onboardingLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5,
+  max: 5000, // limit each IP to 5000 requests per windowMs //TODO: back to 5
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (req) => req.ip ?? "unknown",

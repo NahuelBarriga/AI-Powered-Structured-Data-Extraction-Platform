@@ -1,5 +1,6 @@
 import type { JsonObject } from "@prisma/client/runtime/library";
 import type { Order } from "../../modules/ai/schemas/order.schema";
+import type { UncertaintyFlags } from "../../modules/ai/response/uncertaintyDetector";
 
 export class OrderItemDTO {
   itemName: string;
@@ -49,10 +50,19 @@ export class SuccessResponseDTO<T> {
     model: string,
     timestamp: string,
     version: number,
-    id: string
+    id: string,
+    uncertainty?: UncertaintyFlags
   };
 
-  constructor(result: JsonObject, sessionId?: string, model?: string, timestamp?: string, version?: number, id?: string) {
+  constructor(
+    result: JsonObject, 
+    sessionId?: string, 
+    model?: string, 
+    timestamp?: string, 
+    version?: number, 
+    id?: string,
+    uncertainty?: UncertaintyFlags
+  ) {
     this.success = true;
     this.data = {
       result: result,
@@ -60,7 +70,8 @@ export class SuccessResponseDTO<T> {
       model: model || "",
       timestamp: timestamp || "",
       version: version || 1,
-      id: id || ""
+      id: id || "",
+      uncertainty
     };
   };
 }

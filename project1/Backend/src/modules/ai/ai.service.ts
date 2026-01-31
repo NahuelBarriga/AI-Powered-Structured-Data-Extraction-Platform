@@ -5,6 +5,8 @@ import { OrderSchema } from "./schemas/order.schema";
 import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
+import type { JsonValue } from "@prisma/client/runtime/library";
+import { detectUncertainty, type UncertaintyFlags } from "./response/uncertaintyDetector";
 
 const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
@@ -15,6 +17,7 @@ export interface ExtractionResult {
   tokensIn: number;
   tokensOut: number;
   model: string;
+  uncertainty?: UncertaintyFlags;
 }
 
 // calculate tokens roughly 1 token per 4 characters
@@ -22,7 +25,7 @@ export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: string, userId?: string): Promise<ExtractionResult> {
+export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: JsonValue, userId?: string): Promise<ExtractionResult> {
   const llm = createLLMProvider(); //TODO: make it dynamic?
 
   if (input.text.length > MAX_CHAR_LENGTH) {
@@ -40,6 +43,8 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
   };
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
+
+  console.log(prompt) //!debug
 
   // call LLM
   const response = await llm
@@ -75,11 +80,20 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
   const tokensIn = response.tokensIn ?? calculateTokens(prompt.user + (prompt.system || ''));
   const tokensOut = response.tokensOut ?? calculateTokens(response.content);
 
-  // return typed data with token usage
+  // Detect uncertainty and potential hallucinations
+  const uncertainty = detectUncertainty(result.data, input.text);
+
+  // Log warnings if confidence is low
+  if (uncertainty.confidenceScore < 80) {
+    console.warn(`Low confidence extraction (${uncertainty.confidenceScore}%):`, uncertainty.warnings);
+  }
+
+  // return typed data with token usage and uncertainty info
   return {
     order: result.data,
     tokensIn,
     tokensOut,
     model: response.model,
+    uncertainty,
   };
 }

@@ -48,6 +48,8 @@ model AIExtraction {
   model         String
   tokensIn      Int
   tokenOut      Int
+  confidenceScore Int?           // 0-100 confidence score
+  uncertaintyData Json?          // Full uncertainty flags and warnings
   createdAt     DateTime         @default(now())
   User          User?            @relation(fields: [userId], references: [id])
   userId        String?

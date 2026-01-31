@@ -1,4 +1,5 @@
 import { prisma } from "../../infra/db/prisma";
+import type { UncertaintyFlags } from "../ai/response/uncertaintyDetector";
 
 export async function saveExtraction(params: {
   userId: string;
@@ -12,6 +13,7 @@ export async function saveExtraction(params: {
   version: number;
   tokensIn?: number;
   tokensOut?: number;
+  uncertainty?: UncertaintyFlags;
 }) {
   return prisma.aIExtraction.create({
     data: {
@@ -25,6 +27,8 @@ export async function saveExtraction(params: {
       version: params.version,
       tokensIn: params.tokensIn ?? 0,
       tokenOut: params.tokensOut ?? 0,
+      confidenceScore: params.uncertainty?.confidenceScore,
+      uncertaintyData: params.uncertainty ? JSON.parse(JSON.stringify(params.uncertainty)) : null,
     },
   });
 }

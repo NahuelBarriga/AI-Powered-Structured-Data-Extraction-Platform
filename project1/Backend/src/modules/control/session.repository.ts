@@ -31,3 +31,19 @@ export async function getLastExtractionFromSession(
     },
   });
 }
+
+// Get session with all extractions
+export async function getSessionWithExtractions(sessionId: string) {
+  return await prisma.extractionSession.findUnique({
+    where: {
+      id: sessionId,
+    },
+    include: {
+      extractions: {
+        orderBy: {
+          version: "asc",
+        },
+      },
+    },
+  });
+}

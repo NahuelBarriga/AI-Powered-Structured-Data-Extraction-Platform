@@ -40,7 +40,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
 
     if (!tokenCheck.allowed) {
         const errorResponse = new ErrorResponseDTO(
-            `Token limit exceeded. Current usage: ${tokenCheck.currentUsage}/${tokenCheck.limit} tokens per hour.`,
+            `You've reached your token usage limit. Please try again later or contact support.`,
             undefined
         );
         return errorResponse;
@@ -49,6 +49,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
     const text = order.text;
     let currentText = text;
     const llm = createLLMProvider(); //TODO: make it dynamic?
+    const modelName = (llm as any).model || process.env.LLM_PROVIDER || "unknown";
 
     while (attempt <= max_Retries) {
         try {
@@ -62,6 +63,8 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
                 attempts: attempt,
                 status: "success",
                 provider: process.env.LLM_PROVIDER ?? "unknown",
+                tokensIn: result.tokensIn,
+                tokensOut: result.tokensOut,
                 model: result.model,
                 sessionId: order.sessionId,
                 uncertainty: result.uncertainty ?? null,
@@ -93,15 +96,30 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
             if (!(error instanceof ExtractionError)) {
                 throw error;
             }
+            
+            // Always save the failed extraction for logging
+            await saveExtraction({
+                userId: userId,
+                inputText: currentText,
+                version: version,
+                attempts: attempt,
+                status: "failed",
+                tokensIn: estimatedTokens,
+                provider: process.env.LLM_PROVIDER ?? "unknown",
+                model: modelName,
+                sessionId: order.sessionId,
+            });
+
             if (attempt === max_Retries || error.reason === "LLM_FAILURE") {
                 const errorResponse = new ErrorResponseDTO(
-                    error instanceof Error ? error.message : "Invalid input",
-                    error instanceof Error ? error.stack : undefined
+                    "The order extraction failed. Your input may be unclear or contain conflicting information. Please try with clearer order details.",
+                    undefined
                 );
                 return errorResponse;
             }
+            
             attempt++;
-            currentText = buildRetryInput(text, error); //TODO: could add previous attempts info 
+            currentText = buildRetryInput(text, error); 
         }
     }
 }

@@ -45,8 +45,6 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
 
-  console.log("Generated prompt for LLM:", prompt); //!debug
-
   // call LLM
   const response = await llm
     .generate({
@@ -56,19 +54,16 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
       temperature: 0,
     })
     .catch((error) => { //TODO: fix error handling
-      console.log("LLM generation error:", error); //!debug
-      throw new ExtractionError("LLM call failed", "LLM_FAILURE");
+      throw new ExtractionError("LLM call failed", "LLM_FAILURE", response.model);
     });
   // parse JSON
   let parsed: Record<string, unknown>; // Change type to Record<string, unknown>
   const outputSanitized = sanitizeJson(response.content);
   try {
-    console.log("LLM response content:", outputSanitized); //!debug
     parsed = JSON.parse(outputSanitized) as Record<string, unknown>; // Assert type
   } catch {
-    throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON");
+    throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON", response.model, outputSanitized);
   }
-  console.log("Parsed LLM response:", parsed); //!debug
   // sanitize response
   const sanitizedResponse = Object.fromEntries(Object.entries(parsed).filter(([_, v]) => v !== null));
   // validate schema
@@ -78,13 +73,15 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
     console.error("Schema validation errors:", result.error.message);
     throw new ExtractionError(
       `LLM output does not match Order schema: ${JSON.stringify(result.error.message)}`,
-      "SCHEMA_MISMATCH"
+      "SCHEMA_MISMATCH",
+      response.model,
+      outputSanitized
     );
   }
 
   // Calculate tokens
-  const tokensIn = response.tokensIn ?? calculateTokens(prompt.user + (prompt.system || ''));
-  const tokensOut = response.tokensOut ?? calculateTokens(response.content);
+  const tokensIn = response.tokensIn ?? 0;
+  const tokensOut = response.tokensOut ?? 0;
 
   // Detect uncertainty and potential hallucinations
   const uncertainty = detectUncertainty(result.data, input.text);

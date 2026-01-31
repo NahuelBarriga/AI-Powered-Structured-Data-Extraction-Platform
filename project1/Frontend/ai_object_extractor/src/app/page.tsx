@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import InputForm from "@/src/components/InputForm";
+import ErrorBox from "@/src/components/ErrorBox";
 import { submitOrder } from "../lib/helpers/orderHelper";
 import { useNavigation } from "@/src/lib/hooks/useNavigation";
 
@@ -14,29 +15,37 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
 
-
     try {
-      const res = await submitOrder(text);
-      if (res.success === true) { 
-        push(`/results/${res.data.sessionId}`);
-      } //TODO: else show error
-    } catch {
-      setError("Failed to extract order.");
+      const result = await submitOrder(text);
+      if (result && result.sessionId) {
+        push(`/results/${result.sessionId}`);
+      } else {
+        setError("Failed to extract order. Please try again.");
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : "Failed to process your order. Please check your input and try again.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }
+
   return (
     <main className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-4">
+      <h1 className="text-2xl font-bold mb-4 text-white">
         AI Order Extraction
       </h1>
 
-      <InputForm onSubmit={handleSubmit} loading={loading} />
-
       {error && (
-        <p className="text-red-500 mt-4">{error}</p>
+        <ErrorBox 
+          message={error}
+          onDismiss={() => setError(null)}
+        />
       )}
+
+      <InputForm onSubmit={handleSubmit} loading={loading} />
     </main>
   );
 }

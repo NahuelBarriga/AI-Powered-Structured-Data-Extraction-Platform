@@ -9,7 +9,7 @@ import ExtractionNavigation from "@/src/components/session/ExtractionNavigation"
 import SessionInfo from "@/src/components/session/SessionInfo";
 import ActionButtons from "@/src/components/session/ActionButtons";
 import RefineSection from "@/src/components/session/RefineSection";
-import ErrorMessage from "@/src/components/session/ErrorMessage";
+import ErrorBox from "@/src/components/ErrorBox";
 import { SessionData } from "@/src/types/session.type";
 
 
@@ -64,7 +64,10 @@ export default function ResultsPage() {
       await loadSessionData();
       setStatus("idle");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to refine extraction");
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : "Failed to refine the extraction. Please try again.";
+      setError(errorMessage);
       setStatus("error");
     }
   }
@@ -81,7 +84,10 @@ export default function ResultsPage() {
       await loadSessionData();
       setStatus("idle");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to retry extraction");
+      const errorMessage = err instanceof Error 
+        ? err.message 
+        : "Failed to retry extraction. Please try again.";
+      setError(errorMessage);
       setStatus("error");
     }
   }
@@ -124,7 +130,14 @@ export default function ResultsPage() {
 
   return (
     <main className="max-w-4xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Extraction Results</h1>
+      {error && (
+        <ErrorBox 
+          message={error}
+          onDismiss={() => setError(null)}
+        />
+      )}
+
+      <h1 className="text-3xl font-bold mb-6 text-black">Extraction Results</h1>
 
       {/* Session Information */}
       <SessionInfo 
@@ -154,8 +167,8 @@ export default function ResultsPage() {
         />
       )}
 
-      {/* Error message */}
-      {error && <ErrorMessage message={error} />}
+      {/* Error message - displayed prominently */}
+      {error && <ErrorBox message={error} onDismiss={() => setError(null)} />}
 
       {/* Action Buttons */}
       <ActionButtons

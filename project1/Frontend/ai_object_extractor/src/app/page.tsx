@@ -14,6 +14,7 @@ export default function HomePage() {
     setLoading(true);
     setError(null);
 
+
     try {
       const res = await submitOrder(text);
       if (res.success === true) { 
@@ -25,7 +26,6 @@ export default function HomePage() {
       setLoading(false);
     }
   }
-
   return (
     <main className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-4">

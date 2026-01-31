@@ -3,7 +3,7 @@ import type{
   LLMProvider,
   LLMRequest,
   LLMResponse,
-} from "./llmProvider";
+} from "./llmProvider.type";
 
 export class OpenAIProvider implements LLMProvider {
   private client: OpenAI;
@@ -18,6 +18,7 @@ export class OpenAIProvider implements LLMProvider {
     const completion = await this.client.chat.completions.create({
       model: this.model,
       temperature: request.temperature ?? 0,
+      max_tokens: request.maxTokens ?? 300,
       messages: [
         ...(request.systemPrompt
           ? [{ role: "system" as const, content: request.systemPrompt }]

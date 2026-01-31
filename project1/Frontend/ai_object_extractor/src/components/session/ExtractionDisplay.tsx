@@ -1,34 +1,9 @@
 "use client";
 
 import ConfidenceBadge from "../ConfidenceBadge";
+import { Extraction, ExtractionDisplayProps } from "@/src/types/extraction.type";
 
-interface UncertaintyFlags {
-  hasPlaceholderData: boolean;
-  hasGenericResponses: boolean;
-  hasEmptyItems: boolean;
-  hasSuspiciousPatterns: boolean;
-  uncertainFields: string[];
-  confidenceScore: number;
-  warnings: string[];
-}
 
-interface Extraction {
-  id: string;
-  version: number;
-  inputText: string;
-  extractedData: any;
-  status: string;
-  model: string;
-  attempts: number;
-  createdAt: string;
-  uncertainty?: UncertaintyFlags;
-}
-
-interface ExtractionDisplayProps {
-  extraction: Extraction;
-  onCopy: () => void;
-  copied: boolean;
-}
 
 export default function ExtractionDisplay({
   extraction,

@@ -1,4 +1,3 @@
-import { createLLMProvider } from "./providers/llmFactory";
 import { buildExtractionPrompt } from "./prompt/promptBuilder";
 import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
@@ -7,6 +6,8 @@ import { ExtractionError } from "../../shared/Errors/extractionError";
 import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import { detectUncertainty, type UncertaintyFlags } from "./response/uncertaintyDetector";
+import type { LLMProvider } from "./providers/llmProvider.type";
+import { extractJson } from "../../shared/utils/json.sanitizer";
 
 const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
@@ -25,8 +26,8 @@ export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: JsonValue, userId?: string): Promise<ExtractionResult> {
-  const llm = createLLMProvider(); //TODO: make it dynamic?
+export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider, lastExtraction?: JsonValue, userId?: string): Promise<ExtractionResult> {
+  
 
   if (input.text.length > MAX_CHAR_LENGTH) {
     throw new ExtractionError("Input text exceeds maximum length", "BUSINESS_RULE");
@@ -44,7 +45,7 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
 
-  console.log(prompt) //!debug
+  console.log("Generated prompt for LLM:", prompt); //!debug
 
   // call LLM
   const response = await llm
@@ -55,12 +56,15 @@ export async function extractOrderFromText(input: ReqOrderDTO, lastExtraction?: 
       temperature: 0,
     })
     .catch((error) => { //!fix error handling
+      console.log("LLM generation error:", error); //!debug
       throw new ExtractionError("LLM call failed", "LLM_FAILURE");
     });
   // parse JSON
   let parsed: unknown;
+  const outputSanitized = extractJson(response.content);
   try {
-    parsed = JSON.parse(response.content);
+    console.log("LLM response content:", outputSanitized); //!debug
+    parsed = JSON.parse(outputSanitized);
   } catch {
     throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON");
   }

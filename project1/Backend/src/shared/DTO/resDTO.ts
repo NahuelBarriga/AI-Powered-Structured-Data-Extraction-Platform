@@ -71,7 +71,7 @@ export class SuccessResponseDTO<T> {
       timestamp: timestamp || "",
       version: version || 1,
       id: id || "",
-      uncertainty
+      ...(uncertainty && { uncertainty })
     };
   };
 }

@@ -2,7 +2,7 @@ import type {
   LLMProvider,
   LLMRequest,
   LLMResponse,
-} from "./llmProvider";
+} from "./llmProvider.type";
 
 export class MockLLMProvider implements LLMProvider {
   async generate(request: LLMRequest): Promise<LLMResponse> {

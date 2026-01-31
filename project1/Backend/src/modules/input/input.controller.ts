@@ -8,7 +8,6 @@ import { getSessionResults, inputService } from "./input.service";
 
 export async function inputController(req: Request, res: Response) {
     console.log("Input Controller called"); //!debug
-    console.log(req.body); //!debug
     const request = new ReqOrderDTO(
         req.body?.sessionId,
         req.body?.text,
@@ -39,17 +38,11 @@ export async function getSessionResultsController(req: Request, res: Response) {
     }
 
     try {
-        const session = await getSessionResults(sessionId);
+        const session = await getSessionResults(sessionId, req.user?.id || '1'); //!fix 
 
         if (!session) {
             const errorResponse = new ErrorResponseDTO("Session not found");
             return res.status(404).json(errorResponse);
-        }
-
-        // Verify user owns this session
-        if (session.userId !== (req.user?.id || '1')) { //TODO move to service
-            const errorResponse = new ErrorResponseDTO("Unauthorized");
-            return res.status(403).json(errorResponse);
         }
 
         return res.status(200).json({

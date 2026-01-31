@@ -6,6 +6,8 @@ import { extractOrderFromText, calculateTokens } from "../ai/ai.service";
 import { saveExtraction } from "./input.repository";
 import { createSession, getLastExtractionFromSession, getSessionWithExtractions} from "../control/session.repository";
 import { checkUserTokenLimit, createUsageCost } from "../control/usageCost.repository";
+import { th } from "zod/v4/locales";
+import { createLLMProvider } from "../ai/providers/llmFactory";
 
 const max_Retries = process.env.VITE_MAX_RETRIES
     ? parseInt(process.env.VITE_MAX_RETRIES)
@@ -47,10 +49,11 @@ export async function inputService(order: ReqOrderDTO, id: string) {
     const text = order.text;
     const userId = id;
     let currentText = text;
+    const llm = createLLMProvider(); //TODO: make it dynamic?
 
     while (attempt <= max_Retries) {
         try {
-            const result = await extractOrderFromText(order, lastExtraction?.extractedData, userId);
+            const result = await extractOrderFromText(order, llm,lastExtraction?.extractedData, userId);
 
             const savedExtraction = await saveExtraction({
                 userId: userId,
@@ -62,7 +65,7 @@ export async function inputService(order: ReqOrderDTO, id: string) {
                 provider: process.env.LLM_PROVIDER ?? "unknown",
                 model: result.model,
                 sessionId: order.sessionId,
-                uncertainty: result.uncertainty,
+                uncertainty: result.uncertainty ?? null,
             });
 
             const successResponse = new SuccessResponseDTO(
@@ -124,9 +127,19 @@ ${originalText}
 };
 
 
-export const getSessionResults = async (sessionId: string) => {
+export const getSessionResults = async (sessionId: string, userId: string) => {
     try { 
-        return await getSessionWithExtractions(sessionId);
+        const session = await getSessionWithExtractions(sessionId);
+         // Verify user owns this session
+        if (!session) {
+            return null;
+        }
+        console.log("Session userId:", session.userId, "Requesting userId:", userId); //!debug
+        if (session.userId !== userId) {
+            throw new Error("Unauthorized");
+        }
+        return session;
+
     } catch (error) {
         throw error;
     }

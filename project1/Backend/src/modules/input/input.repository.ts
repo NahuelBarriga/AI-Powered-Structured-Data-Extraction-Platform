@@ -13,7 +13,7 @@ export async function saveExtraction(params: {
   version: number;
   tokensIn?: number;
   tokensOut?: number;
-  uncertainty?: UncertaintyFlags;
+  uncertainty?: UncertaintyFlags | null;
 }) {
   return prisma.aIExtraction.create({
     data: {
@@ -27,7 +27,7 @@ export async function saveExtraction(params: {
       version: params.version,
       tokensIn: params.tokensIn ?? 0,
       tokenOut: params.tokensOut ?? 0,
-      confidenceScore: params.uncertainty?.confidenceScore,
+      confidenceScore: params.uncertainty?.confidenceScore ?? null,
       uncertaintyData: params.uncertainty ? JSON.parse(JSON.stringify(params.uncertainty)) : null,
     },
   });

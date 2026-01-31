@@ -1,16 +1,18 @@
 import type { Request, Response } from "express";
 import { ErrorResponseDTO, SuccessResponseDTO } from "../../shared/DTO/resDTO";
 import authService from "./auth.service"
+import { AuthResponseDTO } from "../../shared/DTO/authDTO";
 
 /**
  * Register a new user
  */
 export async function registerController(req: Request, res: Response) {
   try {
-    const auth = await authService.setTenant();
-    const successResponse = new SuccessResponseDTO(auth);
+    const successResponse = await authService.setTenant();
+    console.log("session set:", successResponse);
+
     
-    res.cookie("session", auth.jwt, {
+    res.cookie("session", successResponse.jwt, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

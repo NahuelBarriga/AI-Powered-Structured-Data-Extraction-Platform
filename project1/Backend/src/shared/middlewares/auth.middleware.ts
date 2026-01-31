@@ -6,8 +6,9 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
-    // 1️⃣ Try JWT from cookie
     const token = req.cookies?.session;
+    console.log("Authenticating request..."); //!debug
+
 
     if (token) {
       try {
@@ -21,8 +22,10 @@ export async function authenticate(req: Request, res: Response, next: NextFuncti
         // req.authType = "session";
         return next();
       } catch (err) {
-        
+         return res.status(401).json({ error: "Unauthorized" });
       }
+    } else {
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
   } catch (err) {

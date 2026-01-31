@@ -7,7 +7,8 @@ export interface PromptBuildInput {
   inputText: string;
   lastExtraction?: JsonValue;
   inputMode?: 'new' | 'retry' | 'refine';
-  tenantId?: string;
+  userId?: string;
+
 }
 
 export interface BuiltPrompt {

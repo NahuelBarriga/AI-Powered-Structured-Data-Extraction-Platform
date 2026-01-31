@@ -36,7 +36,7 @@ export default function ExtractionDisplay({
       {/* Items Display */}
       {items && Array.isArray(items) && items.length > 0 && (
         <div className="mb-4 p-4 bg-white border border-gray-200 rounded-lg">
-          <h3 className="font-semibold mb-3">Items</h3>
+          <h3 className="font-semibold mb-3 text-black">Items:</h3>
           <div className="space-y-2">
             {items.map((item: any, index: number) => (
               <div
@@ -71,7 +71,7 @@ export default function ExtractionDisplay({
       {/* JSON Display */}
       <div className="mb-4">
         <p className="text-xs text-gray-500 mb-2">Full JSON Structure:</p>
-        <pre className="bg-gray-100 p-4 rounded text-xs overflow-x-auto border border-gray-300">
+        <pre className="bg-gray-100 text-black p-4 rounded text-xs overflow-x-auto border border-gray-300">
           {JSON.stringify(extraction.extractedData, null, 2)}
         </pre>
       </div>

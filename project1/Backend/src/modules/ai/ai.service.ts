@@ -7,7 +7,7 @@ import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import type { JsonValue } from "@prisma/client/runtime/library";
 import { detectUncertainty, type UncertaintyFlags } from "./response/uncertaintyDetector";
 import type { LLMProvider } from "./providers/llmProvider.type";
-import { extractJson } from "../../shared/utils/json.sanitizer";
+import { sanitizeJson } from "../../shared/utils/json.sanitizer";
 
 const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
@@ -26,7 +26,7 @@ export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider, lastExtraction?: JsonValue, userId?: string): Promise<ExtractionResult> {
+export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,  userId: string, lastExtraction?: JsonValue): Promise<ExtractionResult> {
   
 
   if (input.text.length > MAX_CHAR_LENGTH) {
@@ -55,22 +55,24 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
       userPrompt: prompt.user,
       temperature: 0,
     })
-    .catch((error) => { //!fix error handling
+    .catch((error) => { //TODO: fix error handling
       console.log("LLM generation error:", error); //!debug
       throw new ExtractionError("LLM call failed", "LLM_FAILURE");
     });
   // parse JSON
-  let parsed: unknown;
-  const outputSanitized = extractJson(response.content);
+  let parsed: Record<string, unknown>; // Change type to Record<string, unknown>
+  const outputSanitized = sanitizeJson(response.content);
   try {
     console.log("LLM response content:", outputSanitized); //!debug
-    parsed = JSON.parse(outputSanitized);
+    parsed = JSON.parse(outputSanitized) as Record<string, unknown>; // Assert type
   } catch {
     throw new ExtractionError("Invalid JSON returned by LLM", "INVALID_JSON");
   }
   console.log("Parsed LLM response:", parsed); //!debug
+  // sanitize response
+  const sanitizedResponse = Object.fromEntries(Object.entries(parsed).filter(([_, v]) => v !== null));
   // validate schema
-  const result = OrderSchema.safeParse(parsed);
+  const result = OrderSchema.safeParse(sanitizedResponse);
 
   if (!result.success) {
     console.error("Schema validation errors:", result.error.message);

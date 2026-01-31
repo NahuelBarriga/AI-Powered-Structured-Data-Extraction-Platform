@@ -5,9 +5,9 @@ import type { UncertaintyFlags } from "../../modules/ai/response/uncertaintyDete
 export class OrderItemDTO {
   itemName: string;
   qty: number;
-  modifiers: string | null;
+  modifiers?: (string | null)[] | null | undefined;
 
-  constructor(name: string, quantity: number, modifiers: string | null) {
+  constructor(name: string, quantity: number, modifiers?: (string | null)[] | null) {
     this.itemName = name;
     this.qty = quantity;
     this.modifiers = modifiers;
@@ -18,7 +18,7 @@ export class OrderCreateDTO {
   orderType?: "dine_in" | "takeaway" | "delivery" | undefined;
   customerName?: string | undefined;
   paymentMethod?: "cash" | "card" | "unknown" | undefined;
-  notes: string | null;
+  notes: string | undefined;
   items: OrderItemDTO[];
 
   constructor(order: Order) {

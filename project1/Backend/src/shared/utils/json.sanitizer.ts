@@ -1,4 +1,4 @@
-export function extractJson(text: string): string {
+export function sanitizeJson(text: string): string {
   return text
     .replace(/```json\s*/i, "")
     .replace(/```/g, "")

@@ -18,12 +18,12 @@ export default function InputForm({
       onSubmit={(e) => {
         e.preventDefault();
         onSubmit(text);
-        setText("");
+        // setText(""); //!debug: keep text after submit
       }}
       className="space-y-4"
     >
       <textarea
-        className="w-full border rounded p-3"
+        className="w-full text-black bg-white border rounded p-3"
         rows={6}
         placeholder={placeholder}
         value={text}

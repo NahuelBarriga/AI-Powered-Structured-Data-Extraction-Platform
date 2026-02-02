@@ -1,26 +1,17 @@
 import { buildExtractionPrompt } from "./prompt/promptBuilder";
-import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
 import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
 import type { JsonValue } from "@prisma/client/runtime/library";
-import { detectUncertainty, type UncertaintyFlags } from "./response/uncertaintyDetector";
+import { detectUncertainty } from "../control/uncertaintyDetector";
 import type { LLMProvider } from "./providers/llmProvider.type";
 import { sanitizeJson } from "../../shared/utils/json.sanitizer";
+import type { ExtractionResult } from "../../shared/types/ai.types";
 
 const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
   : 10000;
-
-export interface ExtractionResult {
-  order: Order;
-  tokensIn: number;
-  tokensOut: number;
-  model: string;
-  uncertainty?: UncertaintyFlags;
-  retries?: number;
-}
 
 // calculate tokens roughly 1 token per 4 characters
 export function calculateTokens(text: string): number {

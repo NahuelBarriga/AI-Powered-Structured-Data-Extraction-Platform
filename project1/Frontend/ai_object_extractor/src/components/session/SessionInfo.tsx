@@ -1,9 +1,6 @@
 "use client";
 
-interface SessionInfoProps {
-  sessionId: string;
-  createdAt: string;
-}
+import type { SessionInfoProps } from "@/src/shared/types/ui.types";
 
 export default function SessionInfo({ sessionId, createdAt }: SessionInfoProps) {
   return (

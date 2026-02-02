@@ -1,8 +1,6 @@
 "use client";
 
-interface ErrorMessageProps {
-  message: string;
-}
+import type { ErrorMessageProps } from "@/src/shared/types/ui.types";
 
 export default function ErrorMessage({ message }: ErrorMessageProps) {
   return (

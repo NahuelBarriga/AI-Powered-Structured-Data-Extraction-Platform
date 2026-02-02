@@ -28,8 +28,8 @@ model User {
 
 model ExtractionSession {
   id               String   @id @default(uuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id])
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   lastExtractionId String?
   createdAt        DateTime @default(now())
 
@@ -52,7 +52,7 @@ model AIExtraction {
   confidenceScore Int?           // 0-100 confidence score
   uncertaintyData Json?          // Full uncertainty flags and warnings
   createdAt     DateTime         @default(now())
-  User          User?            @relation(fields: [userId], references: [id])
+  User          User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId        String?
 
   @@unique([sessionId, version, attempts])
@@ -60,19 +60,19 @@ model AIExtraction {
 
 model usageCounter {
   id     String @id @default(uuid())
-  userId String
+  userId String?
   window String // e.g. "2026-01-28T11"
   type   String
   count  Int    @default(0)
-  user   User   @relation(fields: [userId], references: [id])
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@unique([userId, window, type])
 }
 
 model UsageCost {
   id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id])
+  userId       String?
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
   sessionId    String?
   extractionId String?
   model        String

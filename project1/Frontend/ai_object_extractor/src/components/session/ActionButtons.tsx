@@ -1,11 +1,6 @@
 "use client";
 
-interface ActionButtonsProps {
-  onRetry: () => void;
-  onNewExtraction: () => void;
-  loading: boolean;
-  disabled: boolean;
-}
+import type { ActionButtonsProps } from "@/src/shared/types/ui.types";
 
 export default function ActionButtons({
   onRetry,

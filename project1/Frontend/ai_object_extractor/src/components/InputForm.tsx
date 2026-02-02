@@ -1,16 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import type { InputFormProps } from "@/src/shared/types/input.types";
 
 export default function InputForm({
   onSubmit,
   loading,
   placeholder = "Paste or type the order text here...",
-}: {
-  onSubmit: (text: string) => void;
-  loading: boolean;
-  placeholder?: string;
-}) {
+}: InputFormProps) {
   const [text, setText] = useState("");
 
   return (

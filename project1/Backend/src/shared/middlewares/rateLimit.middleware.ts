@@ -1,14 +1,13 @@
 import { prisma } from "../../infra/db/prisma";
 import type { Request, Response, NextFunction } from "express";
 import { RATE_LIMITS } from "../../config/rateLimits";
+import { ErrorResponseDTO } from "../DTO/resDTO";
 
 export async function rateLimit(req: Request, res: Response, next: NextFunction) {
   const userId = req.user?.id;
 
   if (!userId) {
-    return res.status(401).json({
-      error: "Unauthorized"
-    });
+    return res.status(401).json(new ErrorResponseDTO("Unauthorized"));
   }
 
   for (const rule of RATE_LIMITS) {
@@ -32,9 +31,7 @@ export async function rateLimit(req: Request, res: Response, next: NextFunction)
     });
 
     if (counter.count > rule.max) {
-      return res.status(429).json({
-        error: "Rate limit exceeded"
-      });
+      return res.status(429).json(new ErrorResponseDTO("Rate limit exceeded"));
     }
   }
 

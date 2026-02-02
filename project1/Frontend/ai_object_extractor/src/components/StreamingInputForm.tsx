@@ -4,21 +4,11 @@ import { useState } from "react";
 import { submitOrderStream } from "@/src/lib/helpers/orderStreamHelper";
 import { useNavigation } from "@/src/lib/hooks/useNavigation";
 import ConfidenceBadge from "./ConfidenceBadge";
-
-interface StreamingState {
-  tokens: string;
-  fullContent: string;
-  preview: any | null;
-  validationError: string | null;
-  extractionId: string | null;
-  sessionId: string | null;
-}
+import type { StreamingState, StreamingInputFormProps } from "@/src/shared/types/streaming.types";
 
 export default function StreamingInputForm({
   placeholder = "Paste or type the order text here...",
-}: {
-  placeholder?: string;
-}) {
+}: StreamingInputFormProps) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

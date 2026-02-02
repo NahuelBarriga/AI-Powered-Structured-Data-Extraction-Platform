@@ -1,12 +1,6 @@
 "use client";
 
-interface ExtractionNavigationProps {
-  currentIndex: number;
-  totalExtractions: number;
-  version: number;
-  onPrevious: () => void;
-  onNext: () => void;
-}
+import type { ExtractionNavigationProps } from "@/src/shared/types/ui.types";
 
 export default function ExtractionNavigation({
   currentIndex,

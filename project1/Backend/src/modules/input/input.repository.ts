@@ -1,10 +1,11 @@
+import { JsonObject } from "@prisma/client/runtime/library";
 import { prisma } from "../../infra/db/prisma";
-import type { UncertaintyFlags } from "../ai/response/uncertaintyDetector";
+import type { UncertaintyFlags } from "../../shared/types/ai.types";
 
 export async function saveExtraction(params: {
   userId: string;
   inputText: string;
-  extractedData?: jsonSchema; 
+  extractedData?: JsonObject; 
   attempts: number;
   status: "success" | "failed";
   provider: string;

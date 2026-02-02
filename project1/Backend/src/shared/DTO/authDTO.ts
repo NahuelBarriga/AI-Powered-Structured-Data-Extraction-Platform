@@ -1,11 +1,4 @@
-// Request DTOs
-export interface RegisterRequestDTO {
-  email: string;
-  password: string;
-  name: string;
-}
-
-
+export type { RegisterRequestDTO } from "../types/auth.types";
 
 // Response DTOs
 export class AuthResponseDTO {

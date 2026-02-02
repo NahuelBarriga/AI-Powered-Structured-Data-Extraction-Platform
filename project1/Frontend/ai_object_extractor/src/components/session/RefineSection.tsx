@@ -1,11 +1,7 @@
 "use client";
 
 import InputForm from "../InputForm";
-
-interface RefineSectionProps {
-  onSubmit: (text: string) => void;
-  loading: boolean;
-}
+import type { RefineSectionProps } from "@/src/shared/types/ui.types";
 
 export default function RefineSection({
   onSubmit,

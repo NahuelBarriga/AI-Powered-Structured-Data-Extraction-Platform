@@ -7,3 +7,4 @@ dist
 *.md
 /src/generated/prisma
 /doc
+README.md

@@ -1,26 +1,18 @@
 import { buildExtractionPrompt } from "./prompt/promptBuilder";
-import type { Order } from "./schemas/order.schema";
 import { OrderSchema } from "./schemas/order.schema";
 import orderJsonSchema from "../../infra/seeds/schemas/order.schema.json";
 import { ExtractionError } from "../../shared/Errors/extractionError";
-import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
-import type { JsonValue } from "@prisma/client/runtime/library";
-import { detectUncertainty, type UncertaintyFlags } from "./response/uncertaintyDetector";
-import type { LLMProvider } from "./providers/llmProvider.type";
 import { sanitizeJson } from "../../shared/utils/json.sanitizer";
+import { detectUncertainty } from "../control/uncertaintyDetector";
+import type { JsonValue } from "@prisma/client/runtime/library";
+import type { ReqOrderDTO } from "../../shared/DTO/reqDTO";
+import type { LLMProvider } from "./providers/llmProvider.type";
+import type { StreamingExtractionResult } from "../../shared/types/ai.types";
+import type { Order } from "./schemas/order.schema";
 
 const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
   : 10000;
-
-export interface StreamingExtractionResult {
-  order: Order;
-  tokensIn: number;
-  tokensOut: number;
-  model: string;
-  uncertainty?: UncertaintyFlags;
-  validationError?: string;
-}
 
 export async function* streamExtractOrderFromText(
   input: ReqOrderDTO,

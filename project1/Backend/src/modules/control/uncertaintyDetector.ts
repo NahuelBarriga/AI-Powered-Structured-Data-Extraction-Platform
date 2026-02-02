@@ -1,17 +1,5 @@
-import type { Order } from "../schemas/order.schema";
-
-export interface UncertaintyFlags {
-  hasPlaceholderData: boolean;
-  hasGenericResponses: boolean;
-  hasEmptyItems: boolean;
-  hasSuspiciousPatterns: boolean;
-  uncertainFields: string[];
-  confidenceScore: number; // 0-100
-  warnings: string[];
-  schemaCompliance: number; // 0-100 (NEW)
-  retryPenalty: number; // penalty from retries (NEW)
-  tokenBehavior: number; // signal from token efficiency (NEW)
-}
+import type { Order } from "../ai/schemas/order.schema";
+import type { UncertaintyFlags } from "../../shared/types/ai.types";
 
 /**
  * Detect potential hallucinations or uncertainty in the extracted data
@@ -50,7 +38,7 @@ export function detectUncertainty(order: Order, inputText: string, retries: numb
 
   // ============ RETRY PENALTY SIGNAL ============
   // Multiple retries indicate the LLM struggled to produce valid JSON
-  if (retries > 1) {
+  if (retries > 1) { 
     const retryMultiplier = Math.min(30, (retries - 1) * 15); // Each retry costs 15 points, capped at 30
     flags.retryPenalty = retryMultiplier;
     flags.warnings.push(`Extraction required ${retries} attempts (LLM struggled with consistency)`);

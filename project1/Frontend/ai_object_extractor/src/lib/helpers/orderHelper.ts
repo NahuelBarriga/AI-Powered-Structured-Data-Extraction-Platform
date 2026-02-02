@@ -1,20 +1,15 @@
 import apiClient from "@/src/lib/api";
+import type { ApiResponse, ApiErrorResponse } from "@/src/shared/types/api.types";
 
 const api = apiClient.api;
 
-interface ApiResponse {
-  success: boolean;
-  error?: string;
-  data?: any;
-}
-
-interface ApiErrorResponse {
-  status: number;
-  message: string;
-  data?: any;
-}
-
 const extractErrorMessage = (error: unknown): string => {
+    if (error && typeof error === 'object' && 'response' in error) {
+        const responseData = (error as any).response?.data;
+        if (responseData?.error && typeof responseData.error === 'string') {
+            return responseData.error;
+        }
+    }
   // If it's our API error format
   if (error && typeof error === 'object' && 'message' in error) {
     return (error as ApiErrorResponse).message;

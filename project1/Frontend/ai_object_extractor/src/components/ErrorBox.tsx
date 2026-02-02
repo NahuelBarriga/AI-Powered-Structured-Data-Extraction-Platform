@@ -1,9 +1,6 @@
 "use client";
 
-interface ErrorBoxProps {
-  message: string;
-  onDismiss?: () => void;
-}
+import type { ErrorBoxProps } from "@/src/shared/types/ui.types";
 
 export default function ErrorBox({ message, onDismiss }: ErrorBoxProps) {
   return (

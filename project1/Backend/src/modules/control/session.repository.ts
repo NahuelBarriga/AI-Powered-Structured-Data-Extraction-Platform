@@ -1,9 +1,6 @@
 import { prisma } from "../../infra/db/prisma";
 import type { AIExtraction, ExtractionSession } from "@prisma/client";
-
-export interface CreateSessionInput {
-  userId: string;
-}
+import type { CreateSessionInput } from "../../shared/types/control.types";
 
 
 //  Create a new extraction session for a user

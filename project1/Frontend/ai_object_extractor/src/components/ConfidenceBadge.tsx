@@ -1,19 +1,6 @@
 "use client";
 
-interface UncertaintyFlags {
-  hasPlaceholderData: boolean;
-  hasGenericResponses: boolean;
-  hasEmptyItems: boolean;
-  hasSuspiciousPatterns: boolean;
-  uncertainFields: string[];
-  confidenceScore: number;
-  warnings: string[];
-}
-
-interface ConfidenceBadgeProps {
-  uncertainty?: UncertaintyFlags;
-  score?: number;
-}
+import type { ConfidenceBadgeProps } from "@/src/shared/types/ui.types";
 
 export default function ConfidenceBadge({ uncertainty, score }: ConfidenceBadgeProps) {
   const confidenceScore = score ?? uncertainty?.confidenceScore;

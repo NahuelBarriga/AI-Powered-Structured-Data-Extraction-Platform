@@ -1,16 +1,7 @@
 import apiClient from "@/src/lib/api";
+import type { StreamingEvent } from "@/src/shared/types/streaming.types";
 
 const api = apiClient.api;
-
-interface StreamingEvent {
-  type: "token" | "preview" | "complete" | "error" | "saved";
-  content?: string;
-  fullContent?: string;
-  result?: any;
-  error?: string;
-  extractionId?: string;
-  sessionId?: string;
-}
 
 export const submitOrderStream = async (
   orderData: string,
@@ -34,7 +25,16 @@ export const submitOrderStream = async (
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorMessage = "Unable to start streaming. Please try again.";
+      try {
+        const errorBody = await response.json();
+        if (errorBody?.error && typeof errorBody.error === "string") {
+          errorMessage = errorBody.error;
+        }
+      } catch {
+        // ignore JSON parse errors
+      }
+      throw new Error(errorMessage);
     }
 
     const reader = response.body?.getReader();

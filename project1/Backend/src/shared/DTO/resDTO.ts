@@ -1,6 +1,6 @@
 import type { JsonObject } from "@prisma/client/runtime/library";
 import type { Order } from "../../modules/ai/schemas/order.schema";
-import type { UncertaintyFlags } from "../../modules/ai/response/uncertaintyDetector";
+import type { UncertaintyFlags } from "../types/ai.types";
 
 export class OrderItemDTO {
   itemName: string;

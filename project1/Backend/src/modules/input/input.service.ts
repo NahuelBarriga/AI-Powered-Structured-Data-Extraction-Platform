@@ -8,10 +8,9 @@ import { createSession, getLastExtractionFromSession, getSessionWithExtractions 
 import { checkUserTokenLimit, createUsageCost } from "../control/usageCost.repository";
 import { th } from "zod/v4/locales";
 import { createLLMProvider } from "../ai/providers/llmFactory";
+import { MAX_RETRIES } from "../../config/LLMConfig";
 
-const max_Retries = process.env.VITE_MAX_RETRIES
-    ? parseInt(process.env.VITE_MAX_RETRIES)
-    : 3;
+
 
 const MAX_TOKENS_PER_USER = process.env.MAX_TOKENS_PER_USER
     ? parseInt(process.env.MAX_TOKENS_PER_USER)
@@ -51,7 +50,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
     const llm = createLLMProvider(); //TODO: make it dynamic?
     const modelName = (llm as any).model || process.env.LLM_PROVIDER || "unknown";
 
-    while (attempt <= max_Retries) {
+    while (attempt <= MAX_RETRIES) {
         try {
             const result = await extractOrderFromText(order, llm, userId, lastExtraction?.extractedData);
 
@@ -66,7 +65,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
                 tokensIn: result.tokensIn,
                 tokensOut: result.tokensOut,
                 model: result.model,
-                sessionId: order.sessionId,
+                sessionId: order.sessionId ?? "",
                 uncertainty: result.uncertainty ?? null,
             });
 
@@ -83,7 +82,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
             // Save usage cost with session and extraction IDs
             await createUsageCost({
                 userId: userId,
-                sessionId: order.sessionId,
+                sessionId: order.sessionId ?? "",
                 extractionId: savedExtraction.id,
                 model: result.model,
                 tokensIn: result.tokensIn,
@@ -107,10 +106,10 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
                 tokensIn: estimatedTokens,
                 provider: process.env.LLM_PROVIDER ?? "unknown",
                 model: modelName,
-                sessionId: order.sessionId,
+                sessionId: order.sessionId ?? "",
             });
 
-            if (attempt === max_Retries || error.reason === "LLM_FAILURE") {
+            if (attempt === MAX_RETRIES || error.reason === "LLM_FAILURE") {
                 const errorResponse = new ErrorResponseDTO(
                     "The order extraction failed. Your input may be unclear or contain conflicting information. Please try with clearer order details.",
                     undefined

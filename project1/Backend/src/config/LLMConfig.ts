@@ -12,3 +12,5 @@ export const GEMINI_MODEL = process.env.GEMINI_MODEL || undefined
 //groq
 export const GROQ_API_KEY = process.env.GROQ_API_KEY || undefined
 export const GROQ_MODEL = process.env.GROQ_MODEL || undefined
+
+export const MAX_RETRIES = 3; 

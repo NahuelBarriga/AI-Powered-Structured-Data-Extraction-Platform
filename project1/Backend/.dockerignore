@@ -1,0 +1,8 @@
+node_modules
+infra
+.git
+.gitignore
+.env
+.env.*
+terraform.tfstate
+terraform.tfstate.backup

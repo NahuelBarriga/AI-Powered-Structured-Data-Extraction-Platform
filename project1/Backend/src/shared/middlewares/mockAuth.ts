@@ -9,14 +9,14 @@ export async function mockUser(
   let user = await prisma.user.findFirst();
 
   if (!user) {
-    user = await prisma.user.create({
-      data: {
-        name: "Mock User",
-        email: "mock@user.local",
-      },
-    });
+    // user = await prisma.user.create({
+    //   data: {
+    //     name: "Mock User",
+    //     email: "mock@user.local",
+    //   },
+    // });
   }
 
-  req.user = user; // extend Express Request type later
+  // req.user = user; 
   next();
 }

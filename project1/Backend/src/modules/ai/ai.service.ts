@@ -13,11 +13,30 @@ const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
   : 10000;
 
-// calculate tokens roughly 1 token per 4 characters
+/**
+ * Calculates approximate token count based on text length.
+ * Uses a rough estimate of 1 token per 4 characters.
+ * 
+ * @param text - The input text to calculate tokens for
+ * @returns Estimated token count
+ */
 export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
+/**
+ * Extracts structured order data from user input text using an LLM provider.
+ * Validates input length, calls the LLM, parses JSON response, validates against Order schema,
+ * and calculates confidence score based on multiple signals.
+ * 
+ * @param input - Request DTO containing text and mode
+ * @param llm - LLM provider instance for generating extraction
+ * @param userId - User ID for tracking and rate limiting
+ * @param lastExtraction - Previous extraction data for retry mode (optional)
+ * @param retries - Number of retry attempts made (used for confidence calculation)
+ * @returns Extraction result with order data, token counts, and confidence score
+ * @throws ExtractionError if input validation fails, LLM fails, JSON is invalid, or schema validation fails
+ */
 export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,  userId: string, lastExtraction?: JsonValue, retries: number = 1): Promise<ExtractionResult> {
   
 

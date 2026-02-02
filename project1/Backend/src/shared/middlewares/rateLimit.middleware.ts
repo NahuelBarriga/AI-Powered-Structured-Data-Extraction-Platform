@@ -3,6 +3,16 @@ import type { Request, Response, NextFunction } from "express";
 import { RATE_LIMITS } from "../../config/rateLimits";
 import { ErrorResponseDTO } from "../DTO/resDTO";
 
+/**
+ * Express middleware that enforces rate limiting per user.
+ * Checks multiple rate limit rules (requests per minute, tokens per day, etc).
+ * Uses database to track usage across time windows.
+ * 
+ * @param req - Express request (requires req.user.id to be set by auth middleware)
+ * @param res - Express response
+ * @param next - Next middleware/route handler in chain
+ * @returns Calls next() if all rate limits pass, or sends 429 error if exceeded
+ */
 export async function rateLimit(req: Request, res: Response, next: NextFunction) {
   const userId = req.user?.id;
 

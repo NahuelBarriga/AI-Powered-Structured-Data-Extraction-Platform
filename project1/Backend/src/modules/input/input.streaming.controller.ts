@@ -14,6 +14,25 @@ const MAX_TOKENS_PER_USER = process.env.MAX_TOKENS_PER_USER
     ? parseInt(process.env.MAX_TOKENS_PER_USER)
     : 10000;
 
+/**
+ * Express controller for handling Server-Sent Events streaming extraction requests.
+ * Validates input, applies rate limiting/token limits, streams tokens from LLM,
+ * validates JSON schema, calculates confidence, and saves extraction to database.
+ * 
+ * @param req - Express request with order text in body
+ * @param res - Express response to stream SSE events to
+ * 
+ * The controller:
+ * 1. Validates input text (presence, length > 5 chars)
+ * 2. Creates or retrieves session for tracking extraction
+ * 3. Checks user token limit
+ * 4. Sets up SSE headers for streaming response
+ * 5. Streams tokens from LLM provider
+ * 6. Sends "token", "preview", and "complete" events to client
+ * 7. Saves validated extraction to database
+ * 8. Sends "saved" event with extraction ID
+ * 9. Handles errors and sends error events
+ */
 export async function streamingInputController(req: Request, res: Response) {
     console.log("Streaming Input Controller called");
     const request = new ReqOrderDTO(

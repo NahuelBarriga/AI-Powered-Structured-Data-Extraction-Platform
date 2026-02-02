@@ -14,6 +14,24 @@ const MAX_CHAR_LENGTH = process.env.MAX_INPUT_LENGTH
   ? parseInt(process.env.MAX_INPUT_LENGTH)
   : 10000;
 
+/**
+ * Streams order extraction data token-by-token from an LLM provider.
+ * Uses async generator pattern to yield tokens as they arrive, with optional JSON previews.
+ * Performs strict schema validation after stream completes before saving to database.
+ * 
+ * @param input - Request DTO containing text and mode
+ * @param llm - LLM provider instance that supports streaming (must have streamGenerate method)
+ * @param userId - User ID for tracking and rate limiting
+ * @param lastExtraction - Previous extraction data for retry mode (optional)
+ * @param retries - Number of retry attempts made (used for confidence calculation)
+ * @returns AsyncGenerator yielding token, preview, complete, and error events
+ * 
+ * @yields {object} Streaming events:
+ *   - type: "token" - Individual token with accumulated content
+ *   - type: "preview" - Valid JSON preview (non-blocking, optional)
+ *   - type: "complete" - Stream finished with final validated result
+ *   - type: "error" - Validation or processing error
+ */
 export async function* streamExtractOrderFromText(
   input: ReqOrderDTO,
   llm: LLMProvider,

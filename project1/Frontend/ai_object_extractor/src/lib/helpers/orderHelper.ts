@@ -3,6 +3,13 @@ import type { ApiResponse, ApiErrorResponse } from "@/src/shared/types/api.types
 
 const api = apiClient.api;
 
+/**
+ * Extracts error message from various error types.
+ * Handles API error responses, Error objects, and fallback cases.
+ * 
+ * @param error - Unknown error from catch block
+ * @returns Extracted error message string
+ */
 const extractErrorMessage = (error: unknown): string => {
     if (error && typeof error === 'object' && 'response' in error) {
         const responseData = (error as any).response?.data;
@@ -22,6 +29,16 @@ const extractErrorMessage = (error: unknown): string => {
   return "An unexpected error occurred. Please try again.";
 };
 
+/**
+ * Submits order data for classic (non-streaming) extraction.
+ * Makes a POST request to /api/order endpoint with authentication.
+ * 
+ * @param orderData - Raw text containing order information
+ * @param sessionId - Optional session ID for retry mode
+ * @param mode - Optional extraction mode ("new" or "retry")
+ * @returns Promise resolving to extraction result with order data and confidence
+ * @throws Error with descriptive message if request fails
+ */
 export const submitOrder = async (orderData: string, sessionId?: string, mode?: string): Promise<any> => {
     try {
         const response = await api.post("/api/order", { 
@@ -43,6 +60,14 @@ export const submitOrder = async (orderData: string, sessionId?: string, mode?: 
     }
 }
 
+/**
+ * Retrieves previously saved extraction results for a session.
+ * Used to fetch extraction data by session ID from database.
+ * 
+ * @param sessionId - Session ID to retrieve results for
+ * @returns Promise resolving to session extraction data
+ * @throws Error with descriptive message if request fails
+ */
 export const getSessionResults = async (sessionId: string): Promise<any> => {
     try {
         const response = await api.get(`/api/order/session/${sessionId}`);

@@ -50,7 +50,7 @@ export default function HomePage() {
               : "bg-gray-700 text-gray-200 hover:bg-gray-600"
           }`}
         >
-          📄 Classic Mode
+          Classic Mode
         </button>
         <button
           onClick={() => setMode("streaming")}
@@ -60,7 +60,7 @@ export default function HomePage() {
               : "bg-gray-700 text-gray-200 hover:bg-gray-600"
           }`}
         >
-          ⚡ Streaming Mode
+          Streaming Mode
         </button>
       </div>
 

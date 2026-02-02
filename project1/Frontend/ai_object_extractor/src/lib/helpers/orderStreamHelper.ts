@@ -3,6 +3,25 @@ import type { StreamingEvent } from "@/src/shared/types/streaming.types";
 
 const api = apiClient.api;
 
+/**
+ * Submits order data for streaming (token-by-token) extraction via Server-Sent Events.
+ * Uses Fetch API with Response.body.getReader() to handle streaming response.
+ * Parses SSE "data: {json}" format and calls callback for each event.
+ * 
+ * @param orderData - Raw text containing order information
+ * @param onEvent - Callback function invoked for each streaming event (token, preview, complete, error, saved)
+ * @param sessionId - Optional session ID for retry mode
+ * @param mode - Optional extraction mode ("new" or "retry")
+ * @returns Promise resolving when streaming completes successfully
+ * @throws Error if stream fails to start, stream is interrupted, or processing fails
+ * 
+ * Events yielded to onEvent callback:
+ * - type: "token" - Single token from LLM with accumulated content
+ * - type: "preview" - Valid JSON preview as it becomes parseable
+ * - type: "complete" - Stream finished with final validated result
+ * - type: "error" - Processing error (validation, schema, etc)
+ * - type: "saved" - Successfully saved to database with extraction ID
+ */
 export const submitOrderStream = async (
   orderData: string,
   onEvent: (event: StreamingEvent) => void,

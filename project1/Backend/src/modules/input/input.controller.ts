@@ -7,7 +7,6 @@ import { getSessionResults, inputService } from "./input.service";
 
 
 export async function inputController(req: Request, res: Response) {
-    console.log("Input Controller called"); //!debug
     const request = new ReqOrderDTO(
         req.body?.sessionId,
         req.body?.text,

@@ -7,7 +7,6 @@ import { GroqProvider } from "./groq.provider";
 
 export function createLLMProvider(): LLMProvider {
     const provider = LLM_PROVIDER;
-    console.log(`Creating LLM Provider: ${provider}`); //!debug
     switch (provider) {
         case 'groq':
             return new GroqProvider(

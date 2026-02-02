@@ -26,7 +26,6 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
         order.sessionId = session.id;
     } else { //obtain last extraction and increment version 
         lastExtraction = await getLastExtractionFromSession(order.sessionId);
-        console.log('lastExtraction', lastExtraction) //!debug
         if (lastExtraction) {
             version = lastExtraction.version + 1;
         }
@@ -48,9 +47,8 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
 
     const text = order.text;
     let currentText = text;
-    const llm = createLLMProvider(); //TODO: make it dynamic?
+    const llm = createLLMProvider(); //could be made dynamic 
     const modelName = (llm as any).model || process.env.LLM_PROVIDER || "unknown";
-    console.log(MAX_RETRIES); //!debug
     while (attempt <= MAX_RETRIES) {
         try {
             const result = await extractOrderFromText(order, llm, userId, lastExtraction?.extractedData, attempt);
@@ -95,7 +93,6 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
 
             return successResponse;
         } catch (error) {
-            console.log(error) //!debug
             if (!(error instanceof ExtractionError)) {
                 console.log("Non-extraction error encountered:", error);
                 throw error;
@@ -164,7 +161,6 @@ export const getSessionResults = async (sessionId: string, userId: string) => {
         if (!session) {
             return null;
         }
-        console.log("Session userId:", session.userId, "Requesting userId:", userId); //!debug
         if (session.userId !== userId) {
             throw new Error("Unauthorized");
         }

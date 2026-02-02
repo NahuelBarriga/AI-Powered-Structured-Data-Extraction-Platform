@@ -4,7 +4,7 @@ import type { UncertaintyFlags } from "../ai/response/uncertaintyDetector";
 export async function saveExtraction(params: {
   userId: string;
   inputText: string;
-  extractedData?: unknown; //TODO: define type
+  extractedData?: jsonSchema; 
   attempts: number;
   status: "success" | "failed";
   provider: string;

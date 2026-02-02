@@ -7,7 +7,6 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 export async function authenticate(req: Request, res: Response, next: NextFunction) {
   try {
     const token = req.cookies?.session;
-    console.log("Authenticating request..."); //!debug
 
 
     if (token) {

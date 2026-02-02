@@ -32,10 +32,6 @@ export default function ResultsPage() {
     loadSessionData();
   }, [sessionId]);
 
-  useEffect(() => { //!debug
-    console.log(sessionData)
-  }, [sessionData]);
-
   async function loadSessionData() {
     setStatus("loading");
     setError(null);

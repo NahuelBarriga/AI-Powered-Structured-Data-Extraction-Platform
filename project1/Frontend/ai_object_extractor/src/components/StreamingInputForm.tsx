@@ -140,7 +140,7 @@ export default function StreamingInputForm({
       {loading && streaming.fullContent && (
         <div className="bg-gray-900 border border-gray-700 rounded p-4">
           <p className="text-xs text-gray-400 mb-2">Live JSON Stream:</p>
-          <pre className="text-green-400 text-xs overflow-auto max-h-40 whitespace-pre-wrap break-words">
+          <pre className="text-green-400 text-xs overflow-auto max-h-40 whitespace-pre-wrap wrap-break-word">
             {streaming.fullContent}
           </pre>
           <p className="text-xs text-gray-500 mt-2">

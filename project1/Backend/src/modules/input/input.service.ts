@@ -4,7 +4,7 @@ import { ErrorResponseDTO, OrderCreateDTO, SuccessResponseDTO } from "../../shar
 import { ExtractionError } from "../../shared/Errors/extractionError";
 import { extractOrderFromText, calculateTokens } from "../ai/ai.service";
 import { saveExtraction } from "./input.repository";
-import { createSession, getLastExtractionFromSession, getSessionWithExtractions } from "../control/session.repository";
+import { createSession, getLastExtractionFromSession, getSessionWithExtractions, updateSessionLastExtraction } from "../control/session.repository";
 import { checkUserTokenLimit, createUsageCost } from "../control/usageCost.repository";
 import { th } from "zod/v4/locales";
 import { createLLMProvider } from "../ai/providers/llmFactory";
@@ -26,6 +26,7 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
         order.sessionId = session.id;
     } else { //obtain last extraction and increment version 
         lastExtraction = await getLastExtractionFromSession(order.sessionId);
+        console.log('lastExtraction', lastExtraction) //!debug
         if (lastExtraction) {
             version = lastExtraction.version + 1;
         }
@@ -49,10 +50,10 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
     let currentText = text;
     const llm = createLLMProvider(); //TODO: make it dynamic?
     const modelName = (llm as any).model || process.env.LLM_PROVIDER || "unknown";
-
+    console.log(MAX_RETRIES); //!debug
     while (attempt <= MAX_RETRIES) {
         try {
-            const result = await extractOrderFromText(order, llm, userId, lastExtraction?.extractedData);
+            const result = await extractOrderFromText(order, llm, userId, lastExtraction?.extractedData, attempt);
 
             const savedExtraction = await saveExtraction({
                 userId: userId,
@@ -68,6 +69,9 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
                 sessionId: order.sessionId ?? "",
                 uncertainty: result.uncertainty ?? null,
             });
+
+            // Update session's lastExtractionId
+            await updateSessionLastExtraction(order.sessionId ?? "", savedExtraction.id);
 
             const successResponse = new SuccessResponseDTO(
                 result.order,
@@ -91,13 +95,14 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
 
             return successResponse;
         } catch (error) {
-
+            console.log(error) //!debug
             if (!(error instanceof ExtractionError)) {
+                console.log("Non-extraction error encountered:", error);
                 throw error;
             }
             
             // Always save the failed extraction for logging
-            await saveExtraction({
+            const extractionError = await saveExtraction({
                 userId: userId,
                 inputText: currentText,
                 version: version,
@@ -107,6 +112,15 @@ export async function inputService(order: ReqOrderDTO, userId: string) {
                 provider: process.env.LLM_PROVIDER ?? "unknown",
                 model: modelName,
                 sessionId: order.sessionId ?? "",
+            });
+              // Save usage cost with session and extraction IDs
+            await createUsageCost({
+                userId: userId,
+                sessionId: order.sessionId ?? "",
+                extractionId: extractionError.id,
+                model: modelName,
+                tokensIn: estimatedTokens,
+                tokensOut: 0,
             });
 
             if (attempt === MAX_RETRIES || error.reason === "LLM_FAILURE") {
@@ -131,15 +145,15 @@ const buildRetryInput = (
     if (!error) return originalText;
 
     return `
-The previous attempt failed for this reason:
-"${error.message}"
+    The previous attempt failed for this reason:
+    "${error.message}"
 
-Please extract the order again and FIX the issue.
-Return ONLY valid JSON that strictly matches the schema.
+    Please extract the order again and FIX the issue.
+    Return ONLY valid JSON that strictly matches the schema.
 
-Original input:
-${originalText}
-`;
+    Original input:
+    ${originalText}
+    `;
 };
 
 

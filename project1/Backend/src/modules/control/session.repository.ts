@@ -22,12 +22,35 @@ export async function createSession(
 export async function getLastExtractionFromSession(
   sessionId: string
 ): Promise<AIExtraction | null> {
-  return await prisma.aIExtraction.findFirst({
+  // First, get the session to check lastExtractionId
+  const session = await prisma.extractionSession.findUnique({
+    where: { id: sessionId },
+    select: { lastExtractionId: true },
+  });
+
+  if (!session || !session.lastExtractionId) {
+    return null;
+  }
+
+  // Fetch the last extraction using lastExtractionId
+  return await prisma.aIExtraction.findUnique({
     where: {
-      sessionId: sessionId,
+      id: session.lastExtractionId,
     },
-    orderBy: {
-      version: "desc",
+  });
+}
+
+// Update session's lastExtractionId after saving an extraction
+export async function updateSessionLastExtraction(
+  sessionId: string,
+  extractionId: string
+): Promise<ExtractionSession> {
+  return await prisma.extractionSession.update({
+    where: {
+      id: sessionId,
+    },
+    data: {
+      lastExtractionId: extractionId,
     },
   });
 }

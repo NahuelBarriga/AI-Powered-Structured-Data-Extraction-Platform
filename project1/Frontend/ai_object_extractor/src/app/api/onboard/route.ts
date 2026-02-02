@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 export async function POST() {
-  const res = await fetch("http://localhost:4000/auth/onboard", {
+  const res = await fetch("http://localhost:3000/auth/onboard", {
     method: "POST",
     credentials: "include",
     headers: {

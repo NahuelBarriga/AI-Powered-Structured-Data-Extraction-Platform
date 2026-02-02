@@ -3,7 +3,7 @@ import { z } from "zod";
 export const OrderItemSchema = z.object({
   name: z.string().describe("Name of the item ordered."),
   quantity: z.number().int().min(1).describe("Quantity of the item."),
-  modifiers: z.array(z.string()).nullable().describe("Customizations or modifiers for the item (e.g. no sugar, extra milk)."),
+  modifiers: z.array(z.string()).nullable().describe("Customizations or modifiers for the item (e.g. no sugar, extra milk).").optional(),
 });
 
 export const OrderSchema = z.object({

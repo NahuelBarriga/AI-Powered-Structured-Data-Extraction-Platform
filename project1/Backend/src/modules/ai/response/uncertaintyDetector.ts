@@ -8,12 +8,15 @@ export interface UncertaintyFlags {
   uncertainFields: string[];
   confidenceScore: number; // 0-100
   warnings: string[];
+  schemaCompliance: number; // 0-100 (NEW)
+  retryPenalty: number; // penalty from retries (NEW)
+  tokenBehavior: number; // signal from token efficiency (NEW)
 }
 
 /**
  * Detect potential hallucinations or uncertainty in the extracted data
  */
-export function detectUncertainty(order: Order, inputText: string): UncertaintyFlags {
+export function detectUncertainty(order: Order, inputText: string, retries: number = 1, tokensIn: number = 0, tokensOut: number = 0): UncertaintyFlags {
   const flags: UncertaintyFlags = {
     hasPlaceholderData: false,
     hasGenericResponses: false,
@@ -22,7 +25,52 @@ export function detectUncertainty(order: Order, inputText: string): UncertaintyF
     uncertainFields: [],
     confidenceScore: 100,
     warnings: [],
+    schemaCompliance: 100,
+    retryPenalty: 0,
+    tokenBehavior: 0,
   };
+
+  // ============ SCHEMA COMPLIANCE SIGNAL ============
+  // Penalty for items that are missing required fields or have unusual patterns
+  let schemaIssues = 0;
+  order.items.forEach((item, index) => {
+    if (!item.name || item.name.trim().length === 0) {
+      schemaIssues++;
+      flags.warnings.push(`Item ${index} has empty name`);
+    }
+    if (item.quantity <= 0) {
+      schemaIssues++;
+      flags.warnings.push(`Item ${index} has invalid quantity`);
+    }
+  });
+
+  if (schemaIssues > 0) {
+    flags.schemaCompliance = Math.max(0, 100 - (schemaIssues * 20));
+  }
+
+  // ============ RETRY PENALTY SIGNAL ============
+  // Multiple retries indicate the LLM struggled to produce valid JSON
+  if (retries > 1) {
+    const retryMultiplier = Math.min(30, (retries - 1) * 15); // Each retry costs 15 points, capped at 30
+    flags.retryPenalty = retryMultiplier;
+    flags.warnings.push(`Extraction required ${retries} attempts (LLM struggled with consistency)`);
+  }
+
+  // ============ TOKEN BEHAVIOR SIGNAL ============
+  // Analyze token efficiency and response quality
+  // If tokens are unusually high relative to input, it might indicate hallucination
+  if (tokensIn > 0 && tokensOut > 0) {
+    const tokenRatio = tokensOut / tokensIn;
+    
+    // Healthy range is 0.5x to 2x the input tokens
+    if (tokenRatio > 2) {
+      flags.tokenBehavior -= 15;
+      flags.warnings.push(`Response is significantly longer than input (possible hallucination)`);
+    } else if (tokenRatio < 0.2) {
+      flags.tokenBehavior -= 10;
+      flags.warnings.push(`Response is very short relative to input (possible underfitting)`);
+    }
+  }
 
   // Check for placeholder/uncertain item names
   const placeholderPatterns = [
@@ -107,8 +155,19 @@ export function detectUncertainty(order: Order, inputText: string): UncertaintyF
     }
   }
 
-  // Ensure confidence score doesn't go below 0
-  flags.confidenceScore = Math.max(0, flags.confidenceScore);
+  // ============ FINAL CONFIDENCE CALCULATION ============
+  // Combine all signals into final score
+  // Base: confidenceScore (content-based)
+  // Subtract: schemaCompliance issues
+  // Subtract: retry penalty
+  // Add: token behavior bonus/penalty
+  const finalScore = 
+    flags.confidenceScore * 0.5 +           // 50% weight on content quality
+    flags.schemaCompliance * 0.25 +          // 25% weight on schema compliance
+    (100 - flags.retryPenalty) * 0.15 +      // 15% weight on retry attempts
+    (100 + flags.tokenBehavior) * 0.1;       // 10% weight on token efficiency
+
+  flags.confidenceScore = Math.max(0, Math.min(100, finalScore));
 
   return flags;
 }

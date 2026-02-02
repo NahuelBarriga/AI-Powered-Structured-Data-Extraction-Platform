@@ -22,7 +22,7 @@ app.get("/health", (_req, res) => {
 
 app.use(
     cors({
-        origin: "http://localhost:3001", // origin
+        origin: "http://localhost:4000", // origin, harcoded, could be .env variable
         credentials: true,
         methods: ["GET", "POST"],
         allowedHeaders: ["Content-Type"],

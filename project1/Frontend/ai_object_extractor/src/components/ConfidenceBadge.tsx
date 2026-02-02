@@ -12,14 +12,16 @@ interface UncertaintyFlags {
 
 interface ConfidenceBadgeProps {
   uncertainty?: UncertaintyFlags;
+  score?: number;
 }
 
-export default function ConfidenceBadge({ uncertainty }: ConfidenceBadgeProps) {
-  if (!uncertainty) {
+export default function ConfidenceBadge({ uncertainty, score }: ConfidenceBadgeProps) {
+  const confidenceScore = score ?? uncertainty?.confidenceScore;
+  const warnings = uncertainty?.warnings ?? [];
+
+  if (confidenceScore === undefined) {
     return null;
   }
-
-  const { confidenceScore, warnings } = uncertainty;
 
   // Determine confidence level and styling
   let bgColor = "bg-green-100";

@@ -19,6 +19,7 @@ export interface ExtractionResult {
   tokensOut: number;
   model: string;
   uncertainty?: UncertaintyFlags;
+  retries?: number;
 }
 
 // calculate tokens roughly 1 token per 4 characters
@@ -26,7 +27,7 @@ export function calculateTokens(text: string): number {
   return Math.ceil(text.length / 4);
 }
 
-export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,  userId: string, lastExtraction?: JsonValue): Promise<ExtractionResult> {
+export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,  userId: string, lastExtraction?: JsonValue, retries: number = 1): Promise<ExtractionResult> {
   
 
   if (input.text.length > MAX_CHAR_LENGTH) {
@@ -42,14 +43,16 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
     inputMode: input.mode,
     userId: userId,
   };
+
   //build prompt
   const prompt = buildExtractionPrompt(promptInput);
+
 
   // call LLM
   const response = await llm
     .generate({
       systemPrompt:
-        "You are a system that extracts structured data. Output only valid JSON.",
+        prompt.system,
       userPrompt: prompt.user,
       temperature: 0,
     })
@@ -69,6 +72,7 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
   // validate schema
   const result = OrderSchema.safeParse(sanitizedResponse);
 
+
   if (!result.success) {
     console.error("Schema validation errors:", result.error.message);
     throw new ExtractionError(
@@ -83,8 +87,8 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
   const tokensIn = response.tokensIn ?? 0;
   const tokensOut = response.tokensOut ?? 0;
 
-  // Detect uncertainty and potential hallucinations
-  const uncertainty = detectUncertainty(result.data, input.text);
+  // Detect uncertainty and potential hallucinations (now with retry and token signals)
+  const uncertainty = detectUncertainty(result.data, input.text, retries, tokensIn, tokensOut);
 
   // Log warnings if confidence is low
   if (uncertainty.confidenceScore < 80) {
@@ -98,5 +102,6 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
     tokensOut,
     model: response.model,
     uncertainty,
+    retries,
   };
 }

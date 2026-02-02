@@ -9,6 +9,7 @@ export async function middleware(req: NextRequest) {
   }
 
   try {
+    console.log("No session cookie found, initiating onboarding process.");
     const backendUrl =
       process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000";
     const onboardResponse = await fetch(`${backendUrl}/api/onboard`, {
@@ -27,6 +28,7 @@ export async function middleware(req: NextRequest) {
 
     return response;
   } catch (error) {
+    console.error("Error during onboarding:", error);
     return NextResponse.next();
   }
 }

@@ -5,6 +5,7 @@ While the functional scope is intentionally kept small, the system is designed a
 The primary use case is parsing free-form user input (food orders) into a strict schema that downstream systems can safely consume. The system is intentionally built as a stateless service so it can scale horizontally and integrate with modern frontend frameworks and cloud runtimes.
 
 Product Philosophy & Scope Decisions
+
 From the beginning, this project was approached as a startup-style MVP rather than a feature-complete platform. The focus was not set on UI polish or advanced AI techniques, but on building the right abstractions and the right boundaries so the system can evolve safely.
 The “AI assistant that extracts structured data from free text” use case was chosen mainly due to personal interest. While the exercise did not mention a specific use case for the design, it was decided to focus the system on parsing food orders to structured data. This use case was selected because it represents a realistic production scenario where LLMs could add real value.
 Several conscious scope decisions were made:
@@ -25,6 +26,7 @@ The backend implemented a layer architecture and is Dockerized and deployed in A
 
 
 API Contract
+
 Onboarding
 Method: POST 
 Route: /api/auth

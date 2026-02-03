@@ -1,6 +1,9 @@
 .env 
 
 node_modules
+# Node
+node_modules/
+package-lock.json
 dist
 *.log
 .DS_Store
@@ -12,3 +15,4 @@ README.md
 .terraform/
 terraform.tfstate
 terraform.tfstate.*
+.git-filter-repo/

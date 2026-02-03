@@ -16,3 +16,15 @@ README.md
 terraform.tfstate
 terraform.tfstate.*
 .git-filter-repo/
+
+# Node
+node_modules/
+package-lock.json
+
+# Terraform
+.terraform/
+terraform.tfstate
+terraform.tfstate.*
+
+# Tooling
+.git-filter-repo/

@@ -114,12 +114,22 @@ export default function ResultsPage() {
     return (
       <main className="max-w-4xl mx-auto p-6">
         <p className="text-red-500 mb-4">{error || "Failed to load session"}</p>
-        <button
-          onClick={() => push("/")}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Back to Home
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={() => loadSessionData()}
+            disabled={status === 'refining'}
+            className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          >
+            {status === 'refining' ? 'Retrying...' : 'Retry'}
+          </button>
+
+          <button
+            onClick={() => push("/")}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          >
+            Back to Home
+          </button>
+        </div>
       </main>
     );
   }

@@ -15,27 +15,23 @@ export default function ConfidenceBadge({ uncertainty, score }: ConfidenceBadgeP
   let textColor = "text-green-800";
   let borderColor = "border-green-300";
   let level = "High Confidence";
-  let icon = "[OK]";
 
   if (confidenceScore < 50) {
     bgColor = "bg-red-100";
     textColor = "text-red-800";
     borderColor = "border-red-300";
     level = "Low Confidence";
-    icon = "[Low]";
   } else if (confidenceScore < 80) {
     bgColor = "bg-yellow-100";
     textColor = "text-yellow-800";
     borderColor = "border-yellow-300";
     level = "Medium Confidence";
-    icon = "[Medium]";
   }
 
   return (
     <div className={`mb-4 p-4 rounded-lg border-2 ${bgColor} ${borderColor}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className="text-xl">{icon}</span>
           <h3 className={`font-semibold ${textColor}`}>
             {level} ({confidenceScore}%)
           </h3>

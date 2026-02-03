@@ -133,7 +133,7 @@ export default function ResultsPage() {
         />
       )}
 
-      <h1 className="text-3xl font-bold mb-6 text-black">Extraction Results</h1>
+      <h1 className="text-3xl font-bold mb-6 text-white">Extraction Results</h1>
 
       {/* Session Information */}
       <SessionInfo 

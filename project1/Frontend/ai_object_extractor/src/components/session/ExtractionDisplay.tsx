@@ -21,16 +21,7 @@ export default function ExtractionDisplay({
 
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Extracted Order</h2>
-        <button
-          onClick={onCopy}
-          className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-            copied
-              ? "bg-green-500 text-white"
-              : "bg-blue-500 text-white hover:bg-blue-600"
-          }`}
-        >
-          {copied ? "Copied!" : "Copy JSON"}
-        </button>
+
       </div>
 
       {/* Items Display */}
@@ -51,7 +42,12 @@ export default function ExtractionDisplay({
                 </div>
                 {item.modifiers && (
                   <p className="text-sm text-gray-600">
-                    Modifiers: {item.modifiers}
+                    Modifiers: 
+                    {item.modifiers.map((mod: string, modIndex: number) => (
+                      <span key={modIndex} className="ml-1 p-1 px-2 border border-gray-300 rounded-4xl bg-gray-100">
+                        {mod}
+                      </span>
+                    ))}
                   </p>
                 )}
               </div>
@@ -70,7 +66,19 @@ export default function ExtractionDisplay({
 
       {/* JSON Display */}
       <div className="mb-4">
-        <p className="text-xs text-gray-500 mb-2">Full JSON Structure:</p>
+        <div className="flex justify-between items-center mb-2 mx-2">
+          <p className="text-xs text-gray-500 mb-2">Full JSON Structure:</p>
+          <button
+            onClick={onCopy}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${copied
+                ? "bg-green-500 text-white"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+              }`}
+          >
+            {copied ? "Copied!" : "Copy JSON"}
+          </button>
+        </div>
+
         <pre className="bg-gray-100 text-black p-4 rounded text-xs overflow-x-auto border border-gray-300">
           {JSON.stringify(extraction.extractedData, null, 2)}
         </pre>

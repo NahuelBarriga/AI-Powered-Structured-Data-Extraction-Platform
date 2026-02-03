@@ -54,6 +54,7 @@ export default function HomePage() {
         </button>
         <button
           onClick={() => setMode("streaming")}
+          disabled={true}
           className={`px-4 py-2 rounded font-semibold transition-colors ${
             mode === "streaming"
               ? "bg-green-600 text-white"

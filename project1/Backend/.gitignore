@@ -8,3 +8,7 @@ dist
 /src/generated/prisma
 /doc
 README.md
+*.exe
+.terraform/
+terraform.tfstate
+terraform.tfstate.*

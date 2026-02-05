@@ -530,7 +530,7 @@ Logs explicitly **exclude** raw AI inputs and outputs. This prevents accidental 
 
 - AI inputs and outputs are retained indefinitely to support debugging, auditing, and future evaluation use cases
 - This is a deliberate MVP trade-off
-- In a production environment, retention policies would be enforced at the database level (e.g., time-based expiration per tenant or daemon)
+- In a production environment, retention policies would be enforced at the database level (e.g., time-based expiration per tenant or scheduled cleanup)
 
 ### AI Provider Limitations
 

@@ -67,6 +67,7 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
       temperature: 0,
     })
     .catch((error) => { //TODO: fix error handling
+      console.log("LLM call error:", error);
       throw new ExtractionError("LLM call failed", "LLM_FAILURE", response.model);
     });
   // parse JSON
@@ -100,10 +101,6 @@ export async function extractOrderFromText(input: ReqOrderDTO, llm: LLMProvider,
   // Detect uncertainty and potential hallucinations (now with retry and token signals)
   const uncertainty = detectUncertainty(result.data, input.text, retries, tokensIn, tokensOut);
 
-  // Log warnings if confidence is low
-  if (uncertainty.confidenceScore < 80) {
-    console.warn(`Low confidence extraction (${uncertainty.confidenceScore}%):`, uncertainty.warnings);
-  }
 
   // return typed data with token usage and uncertainty info
   return {

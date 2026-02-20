@@ -36,7 +36,7 @@ export function detectUncertainty(order: Order, inputText: string, retries: numb
     flags.schemaCompliance = Math.max(0, 100 - (schemaIssues * 20));
   }
 
-  // ============ RETRY PENALTY SIGNAL ============
+  
   // Multiple retries indicate the LLM struggled to produce valid JSON
   if (retries > 1) { 
     const retryMultiplier = Math.min(30, (retries - 1) * 15); // Each retry costs 15 points, capped at 30
@@ -44,7 +44,6 @@ export function detectUncertainty(order: Order, inputText: string, retries: numb
     flags.warnings.push(`Extraction required ${retries} attempts (LLM struggled with consistency)`);
   }
 
-  // ============ TOKEN BEHAVIOR SIGNAL ============
   // Analyze token efficiency and response quality
   // If tokens are unusually high relative to input, it might indicate hallucination
   if (tokensIn > 0 && tokensOut > 0) {
@@ -143,7 +142,6 @@ export function detectUncertainty(order: Order, inputText: string, retries: numb
     }
   }
 
-  // ============ FINAL CONFIDENCE CALCULATION ============
   // Combine all signals into final score
   // Base: confidenceScore (content-based)
   // Subtract: schemaCompliance issues
